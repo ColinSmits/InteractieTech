@@ -1,26 +1,27 @@
-#define echoPin 9 // Echo Pin
-#define trigPin 10 // Trigger Pin
+#define echoPin 3// Echo Pin
+#define trigPin 4// Trigger Pin
 #define LEDPin 13 // Onboard LED
-#define motionPin 8 // Motion Pin
+#define motionPin 2 // Motion Pin
 
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
 long duration, distance; // Duration used to calculate distance
 unsigned long previousMillisMotion = 0;
-unsigned long previousMillisDist = 0
-unsigned long triggerTime = 2000; // Set time (ms) you need to have no motion to change state 
-unsigned long distanceDelay = 500; // Set time (ms) interval when distance is updated (on LCD)
+unsigned long previousMillisDist = 0;
+unsigned long triggertime = 2000; // Set time (ms) you need to have no motion to change state 
+unsigned long distanceDelay = 500;
+int minDistance = 25;
 
 bool roomEmpty = true;
 bool inUse = false;
-
+bool movingState;
 int motionTimer = 0;
 
 
 #include <LiquidCrystal.h>
 
 // initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
 
 void setup() {
@@ -28,16 +29,16 @@ void setup() {
  lcd.print("Room Empty");
  lcd.setCursor(0, 1);
  lcd.print("Not in Use");
-
+ 
  pinMode(trigPin, OUTPUT);
  pinMode(echoPin, INPUT);
- pinMode(motion, INPUT);
+ pinMode(motionPin, INPUT);
  pinMode(LEDPin, OUTPUT); // Use LED indicator (if required)
 }
 
 void loop() {
  movingState = digitalRead(motionPin);
- unsigned long currentMillis = millis()
+ unsigned long currentMillis = millis();
  /* The following trigPin/echoPin cycle is used to determine the
  distance of the nearest object by bouncing soundwaves off of it. */
  
@@ -47,11 +48,11 @@ void loop() {
    roomEmpty = false;
  }
  
- else if (!roomEmpty && movingState == LOW){
+ else if (!roomEmpty && !inUse && movingState == LOW){
    motionTimer += currentMillis - previousMillisMotion; //add ms to timer
    previousMillisMotion = currentMillis;
    
-   if (motionTimer > triggerTime){
+   if (motionTimer > triggertime){
      roomEmpty = true;
      lcd.setCursor(0,0);
      lcd.print("              ");
@@ -60,37 +61,51 @@ void loop() {
      motionTimer = 0;
    }
  }
-   
  
- if (currentMillis - previousMillisDist >= distanceDelay){
-   digitalWrite(trigPin, LOW); 
-   delayMicroseconds(2); 
-  
-   digitalWrite(trigPin, HIGH);
-   delayMicroseconds(10); 
-   
-   digitalWrite(trigPin, LOW);
-   duration = pulseIn(echoPin, HIGH);
-   
-   //Calculate the distance (in cm) based on the speed of sound.
-   distance = duration/58.2;
-   
-   if (distance >= maximumRange || distance <= minimumRange){
-     lcd.clear();
-     lcd.print("Out of range");
-   }
-   else {
-     lcd.clear();
-     lcd.print("Distance:");
-     lcd.setCursor(0, 1);
-     lcd.print(distance);
-   }
-   previousMillisDist = currentMillis;
+ if (inUse){
+   motionTimer = 0;
+   previousMillisMotion = currentMillis;
  }
  
-  
-  
+ if (currentMillis - previousMillisDist >= distanceDelay && !roomEmpty){
+       digitalWrite(trigPin, LOW); 
+       delayMicroseconds(2); 
+      
+       digitalWrite(trigPin, HIGH);
+       delayMicroseconds(10); 
+       
+       digitalWrite(trigPin, LOW);
+       duration = pulseIn(echoPin, HIGH);
+       
+       //Calculate the distance (in cm) based on the speed of sound.
+       distance = duration/58.2;
+     
+       if (distance >= maximumRange || distance <= minimumRange){
+       
+       }
+       else {
+         if (!inUse && distance < minDistance){
+           inUse = true;
+           motionTimer = 0;
+           lcd.setCursor(0,1);
+           lcd.print("           ");
+           lcd.setCursor(0,1);
+           lcd.print("in Use");
+         }
+         
+         else if (inUse && distance > minDistance){
+           inUse = false;
+           lcd.setCursor(0,1);
+           lcd.print("           ");
+           lcd.setCursor(0,1);
+           lcd.print("Not in Use");
+         }
+       }
+     previousMillisDist = currentMillis;
+ }
 }
+
+
 
 
 
