@@ -5,16 +5,46 @@
 
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
-long duration, distance; // Duration used to calculate distance
+long duration, d; // Duration used to calculate distance
 unsigned long previousMillisMotion = 0;
 unsigned long previousMillisDist = 0;
 unsigned long triggertime = 2000; // Set time (ms) you need to have no motion to change state 
-unsigned long distanceDelay = 500;
+unsigned long distanceDelay = 250;
 int minDistance = 25;
 
+unsigned long decisionTime = 1000;
+
+//Distance helper variables
+bool sitting = false;
+bool standing = false;
+bool attemptToSit = false;
+bool attemptToStand = false;
+bool attemptToUse = false;
+bool attemptToFlee = false;
+
+unsigned long sitAttemptTime = 0;
+unsigned long standAttemptTime = 0;
+unsigned long useAttemptTime = 0;
+unsigned long standTime = 0;
+unsigned long sitTime = 0;
+unsigned long useTime = 0;
+unsigned long maxSitTime = 0;
+unsigned long maxStandTime = 0;
+unsigned long maxUseTime = 0;
+unsigned long previousDistState = 0;
+unsigned long fleeAttemptTime = 0;
+
+int sitDistance = 10;
+int standDistance = 35;
+
+
+//states
 bool roomEmpty = true;
 bool inUse = false;
+bool magnet = true;
 bool movingState;
+
+
 int motionTimer = 0;
 
 
@@ -39,35 +69,34 @@ void setup() {
 void loop() {
  movingState = digitalRead(motionPin);
  unsigned long currentMillis = millis();
- /* The following trigPin/echoPin cycle is used to determine the
- distance of the nearest object by bouncing soundwaves off of it. */
  
- if (roomEmpty && movingState == HIGH){
-   lcd.setCursor(0,0);
-   lcd.print("Room inside");
-   roomEmpty = false;
- }
+ //if (roomEmpty && movingState == HIGH){
+ //  lcd.setCursor(0,0);
+ //  lcd.print("Room inside");
+ //  roomEmpty = false;
+ //  motionTimer = 0;
+ //}
  
- else if (!roomEmpty && !inUse && movingState == LOW){
-   motionTimer += currentMillis - previousMillisMotion; //add ms to timer
-   previousMillisMotion = currentMillis;
+ //else if (!roomEmpty && !inUse && movingState == LOW){
+ //  motionTimer += currentMillis - previousMillisMotion; //add ms to timer
+ //  previousMillisMotion = currentMillis;
    
-   if (motionTimer > triggertime){
-     roomEmpty = true;
-     lcd.setCursor(0,0);
-     lcd.print("              ");
-     lcd.setCursor(0,0);
-     lcd.print("Room empty");
-     motionTimer = 0;
-   }
- }
+ //  if (motionTimer > triggertime){
+ //    roomEmpty = true;
+ //    lcd.setCursor(0,0);
+ //    lcd.print("              ");
+ //    lcd.setCursor(0,0);
+ //    lcd.print("Room empty");
+ //    motionTimer = 0;
+ //  }
+ //}
  
- if (inUse){
-   motionTimer = 0;
-   previousMillisMotion = currentMillis;
- }
+ //if (inUse){
+ //  motionTimer = 0;
+ //  previousMillisMotion = currentMillis;
+ //}
  
- if (currentMillis - previousMillisDist >= distanceDelay && !roomEmpty){
+ if (currentMillis - previousMillisDist >= distanceDelay){ //&& !roomEmpty){
        digitalWrite(trigPin, LOW); 
        delayMicroseconds(2); 
       
@@ -78,31 +107,184 @@ void loop() {
        duration = pulseIn(echoPin, HIGH);
        
        //Calculate the distance (in cm) based on the speed of sound.
-       distance = duration/58.2;
+       d = duration/58.2;
      
-       if (distance >= maximumRange || distance <= minimumRange){
-       
-       }
-       else {
-         if (!inUse && distance < minDistance){
-           inUse = true;
-           motionTimer = 0;
-           lcd.setCursor(0,1);
-           lcd.print("           ");
-           lcd.setCursor(0,1);
-           lcd.print("in Use");
-         }
-         
-         else if (inUse && distance > minDistance){
-           inUse = false;
-           lcd.setCursor(0,1);
-           lcd.print("           ");
-           lcd.setCursor(0,1);
-           lcd.print("Not in Use");
-         }
-       }
-     previousMillisDist = currentMillis;
+       checkDistanceState(d);
+       previousMillisDist = currentMillis;
  }
+}
+
+void checkDistanceState(int dist){
+  unsigned long current = millis();
+  unsigned long timeDif = current - previousDistState;
+  bool far = (dist > standDistance);
+  previousDistState = current;
+  
+  if (!inUse){
+    if (!attemptToUse && !far){
+      attemptToUse = true;
+      useAttemptTime = 0;
+    }
+    else if (attemptToUse && !far && useAttemptTime < decisionTime){
+     useAttemptTime += timeDif; 
+    }
+    else if (attemptToUse && !far && useAttemptTime >= decisionTime){
+      inUse = true;
+      useTime = 0;
+      standing = true;
+      standTime = 0;
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("In Use");
+      lcd.setCursor(0,1);
+      lcd.print("Standing");
+      attemptToUse = false;
+    }
+    
+    else{
+      useAttemptTime = 0;
+    }
+  }
+  
+  
+  
+  else if (standing){
+    bool sitClose = (dist <= sitDistance);
+    bool standClose = (dist <= standDistance);
+    
+    if (standClose && !sitClose){
+      standTime += timeDif;
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print(dist);
+      lcd.setCursor(0,1);
+      lcd.print("Standing ");
+      lcd.print(standTime / 1000);
+      useTime += timeDif;
+    }
+    
+    else {
+      if (!sitting && sitClose && !attemptToSit){
+        attemptToSit = true;
+        sitAttemptTime = 0;
+      }
+      else if (attemptToSit && sitClose && sitAttemptTime < decisionTime){
+        sitAttemptTime += timeDif;
+      }
+      
+      else if (attemptToSit && sitClose && sitAttemptTime >= decisionTime){
+        sitting = true;
+        lcd.clear();
+        lcd.setCursor(0,0);
+        //lcd.print("In Use");
+        lcd.setCursor(0,1);
+        lcd.print("Sitting");
+        maxStandTime = max(maxStandTime, standTime);
+        standing = false;
+        standTime = 0;
+        sitTime = 0;
+        attemptToSit = false;      
+      }
+      else {
+        sitAttemptTime = 0;
+      }
+    }
+    
+  }
+  
+  else if (sitting){
+    bool sitClose = (dist <= sitDistance);
+    bool standClose = (dist <= standDistance);
+    
+    if (sitClose){
+      sitTime += timeDif;
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print(timeDif);
+      lcd.setCursor(0,1);
+      lcd.print("Sitting ");
+      lcd.print(sitTime / 1000);
+      useTime += timeDif;
+    }
+    
+    else {
+      if (!sitClose && standClose && !attemptToStand){
+        attemptToStand = true;
+        standAttemptTime = 0;
+      }
+      else if (!sitClose && standClose && attemptToStand && standAttemptTime < decisionTime){
+        standAttemptTime += timeDif;
+      }
+      else if (!sitClose && standClose && attemptToStand && standAttemptTime >= decisionTime){
+        standing = true;
+        sitting = false;
+        lcd.setCursor(0,1);
+        lcd.print("Standing");
+        maxSitTime = max(maxSitTime, sitTime);
+        sitTime = 0;
+        standTime = 0;
+        attemptToStand = false;
+      }
+      else {
+        standAttemptTime = 0;
+      }
+    }
+  }
+  
+  
+  if (far){
+    if (!attemptToFlee && far){
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("fleeing");
+      lcd.setCursor(0,1);
+      if (standing){
+        lcd.print("Standing");
+      }
+      else {
+        lcd.print("Sitting");
+      }
+      attemptToFlee = true;
+      fleeAttemptTime = 0;
+    }
+    else if (attemptToFlee && fleeAttemptTime < decisionTime && far){
+      fleeAttemptTime += timeDif;
+    }
+    else if (attemptToFlee && fleeAttemptTime >= decisionTime && far){
+      inUse = false;
+      
+      if (standing){
+        maxStandTime = max(maxStandTime, standTime); 
+      }
+      if (sitting){
+        maxSitTime = max(maxSitTime, sitTime);
+      }
+      standing = false;
+      sitTime = 0;
+      standTime = 0;
+      sitting = false;
+      maxUseTime = max(maxUseTime, useTime);
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Max use: ");
+      lcd.print(maxUseTime / 1000);
+      lcd.setCursor(0,1);
+      if (maxSitTime > 0){
+        lcd.print("Sit for ");
+        lcd.print(maxSitTime / 1000);
+        lcd.print("s");
+      }
+      else {
+        lcd.print("Stood for ");
+        lcd.print(maxStandTime / 1000);
+        lcd.print("s");
+      }
+      useTime = 0;
+    }
+  }
+    
+    
+  
 }
 
 
