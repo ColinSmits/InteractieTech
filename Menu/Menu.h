@@ -12,7 +12,7 @@ TallFont Header
 
 void initializeMenu(LiquidCrystal *l);
 void showIdleMenu();
-void menureset();
+bool resetMenu();
 void activateMenu();
 void selectMenu();
 

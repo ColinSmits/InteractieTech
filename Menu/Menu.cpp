@@ -123,17 +123,21 @@ void selectMenu(){
   }
 }
 
-void menureset(){
+bool resetMenu(){
   if (millis() - lastmillis > 5000){
     //active selected menu after 3 seconds
     output_lcd->clear();
     lastmillis = millis();
     showIdleMenu();
+    return false;
   }
   if (activeMenu %2 == 1 && state){
     output_lcd->setCursor(10,1);
     output_lcd->print(5 - ((millis() - lastmillis) / 1000));
   }
+
+  return true;
+
 }
 
 

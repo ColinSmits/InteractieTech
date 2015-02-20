@@ -1,5 +1,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Menu.h>
+#include <Button.h>
 
 // Data wire is plugged into port 2 on the Arduino
 #define ONE_WIRE_BUS 2
@@ -14,13 +16,17 @@ DallasTemperature sensors(&oneWire);
 int numberOfDevices; // Number of temperature devices found
 
 DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address
+Button menuButton(17); //A3
+Button choiceButton(18); //A4
 
 
 #define echoPin 4// Echo Pin
 #define trigPin 3// Trigger Pin
-#define LEDPin 13 // Onboard LED
+#define ledPin 13 // Onboard LED
 #define motionPin 5 // Motion Pin
-#define LDRPin 0
+#define LDRPin 0 // Light Sensor
+#define magnetPin 15 // Magnetic sensor
+
 
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
@@ -32,10 +38,19 @@ unsigned long tempDelay = 2000;
 unsigned long triggertime = 10000; // Set time (ms) you need to have no motion to change state 
 unsigned long distanceDelay = 250;
 unsigned long usageDelay = 15000;
+unsigned long menuTimer = 0;
+unsigned long menyDelay = 10000;
 unsigned long lastUsed = -usageDelay;
 int minDistance = 25;
 
 unsigned long decisionTime = 2000;
+
+int ledState = HIGH;         // the current state of the output pin
+int magnetState;             // the current reading from the input pin
+int lastMagnetState = LOW;
+
+long lastDebounceTime = 0;  // the last time the output pin was toggled
+long debounceDelay = 50; 
 
 //Distance helper variables
 bool sitting = false;
@@ -68,6 +83,7 @@ bool roomEmpty = true;
 bool inUse = false;
 bool magnet = true;
 bool movingState;
+bool menuActive = false;
 
 
 int motionTimer = 0;
@@ -95,20 +111,75 @@ void setup() {
   }
   
  lcd.begin(16, 2);
+
+ initializeMenu(&lcd);
+ showIdleMenu();
+ 
+ lcd.setCursor(0,0);
  lcd.print("Room Empty");
  lcd.setCursor(0, 1);
  lcd.print("Not in Use");
- 
  pinMode(trigPin, OUTPUT);
  pinMode(echoPin, INPUT);
  pinMode(motionPin, INPUT);
- pinMode(LEDPin, OUTPUT); // Use LED indicator (if required)
+ pinMode(ledPin, OUTPUT); // Use LED indicator (if required)
  pinMode(LDRPin, INPUT);
+ pinMode(magnetPin, INPUT);
 }
 
 void loop() {
  movingState = digitalRead(motionPin);
+ magnetState = digitalRead(magnetPin);
  unsigned long currentMillis = millis();
+ 
+  int reading = digitalRead(magnetPin);
+  //Serial.print(reading);
+  //Serial.println();
+  // check to see if you just pressed the button
+  // (i.e. the input went from LOW to HIGH),  and you've waited
+  // long enough since the last press to ignore any noise:
+
+  // If the switch changed, due to noise or pressing:
+  if (reading != lastMagnetState) {
+    // reset the debouncing timer
+    lastDebounceTime = currentMillis;
+  }
+
+  if ((currentMillis - lastDebounceTime) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer
+    // than the debounce delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (reading != magnetState) {
+      Serial.print("Change MAGNET");
+      Serial.println();
+      magnetState = reading;
+      ledState = !ledState;
+      
+    }
+  }
+  
+  if (menuButton.read()){
+    activateMenu();
+    menuActive = true;
+    menuTimer = currentMillis;
+  }
+  else {
+    if (!resetMenu()){
+      menuActive = false;
+    }
+  }
+  if (menuActive && choiceButton.read()){
+    selectMenu();
+  }
+
+  // set the LED:
+  digitalWrite(ledPin, ledState);
+
+  // save the reading.  Next time through the loop,
+  // it'll be the lastButtonState:
+  lastMagnetState = reading;
+  
  
  if (roomEmpty && movingState == HIGH){
    lcd.setCursor(0,0);
@@ -124,7 +195,7 @@ void loop() {
    if (motionTimer > triggertime){
      roomEmpty = true;
      lcd.setCursor(0,0);
-     lcd.print("              ");
+     lcd.print("           ");
      lcd.setCursor(0,0);
      lcd.print("Room empty");
      motionTimer = 0;
@@ -135,7 +206,7 @@ void loop() {
    motionTimer = 0;
  }
  
- if (currentMillis - previousMillisDist >= distanceDelay && !roomEmpty){
+ if (!menuActive && currentMillis - previousMillisDist >= distanceDelay && !roomEmpty){
        digitalWrite(trigPin, LOW); 
        delayMicroseconds(2); 
       
@@ -171,13 +242,13 @@ void loop() {
 		// It responds almost immediately. Let's print out the data
 		printTemperature(tempDeviceAddress); // Use a simple function to print out the data
                 if (currentMillis - lastUsed < usageDelay){
-                  lcd.clear();
+                  //lcd.clear();
                   float tempC = sensors.getTempC(tempDeviceAddress);
-                  lcd.print("Temp C:");
-                  lcd.print(tempC);
-                  lcd.setCursor(0,1);
-                  lcd.print("Empty: ");
-                  lcd.print(roomEmpty);
+                  //lcd.print("Temp C:");
+                  //lcd.print(tempC);
+                  //lcd.setCursor(0,1);
+                  //lcd.print("Empty: ");
+                  //lcd.print(roomEmpty);
                   Serial.print("On LCD");
                   Serial.println();
                   }
@@ -409,7 +480,7 @@ void usageDone(int maxUse, int maxStand, int maxSit){
     Serial.println("Not used");
     lcd.print("Nothing");
   }
-  else if (maxUse <= nr1Time){
+  else if (maxUse <= nr1Time || magnetState == LOW){
     Serial.println("Nr 1 done");
     Serial.println("Spray once");
     lcd.print("Spray: 1 time");
