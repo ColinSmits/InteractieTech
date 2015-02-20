@@ -20,6 +20,7 @@ DeviceAddress tempDeviceAddress; // We'll use this variable to store a found dev
 #define trigPin 3// Trigger Pin
 #define LEDPin 13 // Onboard LED
 #define motionPin 6 // Motion Pin
+#define LDRPin 0
 
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
@@ -30,6 +31,8 @@ unsigned long prevTempTime = 0;
 unsigned long tempDelay = 3000;
 unsigned long triggertime = 2000; // Set time (ms) you need to have no motion to change state 
 unsigned long distanceDelay = 250;
+unsigned long usageDelay = 30000;
+unsigned long lastUsed = -usageDelay;
 int minDistance = 25;
 
 unsigned long decisionTime = 1000;
@@ -57,6 +60,8 @@ unsigned long fleeAttemptTime = 0;
 int sitDistance = 10;
 int standDistance = 35;
 
+unsigned long nr1Time = 45000;
+unsigned long minimumTime = 20000;
 
 //states
 bool roomEmpty = true;
@@ -85,25 +90,11 @@ void setup() {
     // Search the wire for address
     if(sensors.getAddress(tempDeviceAddress, i))
 	{
-		Serial.print("Found device ");
-		Serial.print(i, DEC);
-		Serial.print(" with address: ");
-		//printAddress(tempDeviceAddress);
-		Serial.println();
 		
-		Serial.print("Setting resolution to ");
-		Serial.println(TEMPERATURE_PRECISION, DEC);
-		
-		// set the resolution to TEMPERATURE_PRECISION bit (Each Dallas/Maxim device is capable of several different resolutions)
 		sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
 		
-		 Serial.print("Resolution actually set to: ");
-		Serial.print(sensors.getResolution(tempDeviceAddress), DEC); 
-		Serial.println();
 	}else{
-		Serial.print("Found ghost device at ");
-		Serial.print(i, DEC);
-		Serial.print(" but could not detect address. Check power and cabling");
+		
 	}
   }
   
@@ -116,6 +107,7 @@ void setup() {
  pinMode(echoPin, INPUT);
  pinMode(motionPin, INPUT);
  pinMode(LEDPin, OUTPUT); // Use LED indicator (if required)
+ pinMode(LDRPin, INPUT);
 }
 
 void loop() {
@@ -188,6 +180,9 @@ void loop() {
 	
   }
   
+  int light = analogRead(LDRPin);
+  Serial.println("The current light =:");
+  Serial.println(light);
   prevTempTime = currentMillis;
  }
 }
@@ -198,7 +193,7 @@ void checkDistanceState(int dist){
   bool far = (dist > standDistance);
   previousDistState = current;
   
-  if (!inUse){
+  if (!inUse && current - lastUsed >= usageDelay){
     if (!attemptToUse && !far){
       attemptToUse = true;
       useAttemptTime = 0;
@@ -310,7 +305,7 @@ void checkDistanceState(int dist){
   }
   
   
-  if (far){
+  if (far && current - lastUsed >= usageDelay){
     if (!attemptToFlee && far){
       lcd.clear();
       lcd.setCursor(0,0);
@@ -358,6 +353,9 @@ void checkDistanceState(int dist){
         lcd.print("s");
       }
       useTime = 0;
+      lastUsed = current;
+      Serial.println("Usage done...");
+      usageDone(maxUseTime, maxStandTime, maxSitTime);
     }
   }
     
@@ -382,6 +380,45 @@ void printTemperature(DeviceAddress deviceAddress)
   Serial.println(DallasTemperature::toFahrenheit(tempC)); // Converts tempC to Fahrenheit
 }
 
+void usageDone(int maxUse, int maxStand, int maxSit){
+  Serial.print("checking usage...");
+  Serial.print("Max Use: ");
+  Serial.print(maxUse);
+  Serial.println();
+  Serial.print("Nr1 Time:  ");
+  Serial.print(nr1Time);
+  Serial.println();
+  Serial.print("Max use < min time?: ");
+  Serial.print(maxUse < minimumTime);
+  Serial.println();
+  Serial.print("Max use < nr1Time?: ");
+  Serial.print(maxUse < nr1Time);
+  Serial.println();
+  Serial.print("Max Stand: ");
+  Serial.print(maxStand);
+  Serial.println();
+  Serial.print("Max Sit: ");
+  Serial.print(maxSit);  
+  lcd.clear();
+  lcd.setCursor(0,0);
+  
+  if (maxUse < minimumTime){
+    Serial.println("Not used");
+    lcd.print("Nothing");
+  }
+  else if (maxUse <= nr1Time){
+    Serial.println("Nr 1 done");
+    Serial.println("Spray once");
+    lcd.print("Spray: 1 time");
+  }
+  else if (maxUse > nr1Time){
+    Serial.println("Nr 2 done");
+    Serial.println("Spray twice");
+    lcd.print("Spray: 2 times");
+  }
+    
+
+}
 
 
 
