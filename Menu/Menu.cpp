@@ -48,8 +48,8 @@ bool state = false;
 unsigned long lastmillis = 0;
 int activeMenu = 0;
 bool reset = false;
-unsigned int _delay = 15000;
-
+unsigned int _delay = 25000;
+long resultBuilder[3] = {0, _delay, 0};
 void initializeMenu(LiquidCrystal *l)
 {
 output_lcd=l;
@@ -102,6 +102,9 @@ void selectMenu(){
     switch (activeMenu % 2) {
       case 0:
         _delay += 1000;
+        if (_delay == 0){
+	   _delay = 15000;
+        }
         output_lcd->setCursor(0,1);
         output_lcd->print("Seconds: ");
         output_lcd->print(_delay/1000);
@@ -123,22 +126,34 @@ void selectMenu(){
   }
 }
 
-bool resetMenu(){
+long* resetMenu(){
   if (millis() - lastmillis > 5000){
     //active selected menu after 3 seconds
     output_lcd->clear();
     lastmillis = millis();
     showIdleMenu();
-    return false;
+    resultBuilder[0] = 0;
+    resultBuilder[1] = _delay; 
+    if (reset){
+       resultBuilder[2] = 1;
+    }
+    else {
+       resultBuilder[2] = 0;
+    }
+    return resultBuilder;
   }
   if (activeMenu %2 == 1 && state){
     output_lcd->setCursor(10,1);
     output_lcd->print(5 - ((millis() - lastmillis) / 1000));
   }
-
-  return true;
-
+  resultBuilder[0] = 1;
+  return resultBuilder;
 }
+
+
+
+
+
 
 
 

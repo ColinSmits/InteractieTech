@@ -10,10 +10,13 @@ TallFont Header
 
 #include <LiquidCrystal.h>
 
+
 void initializeMenu(LiquidCrystal *l);
 void showIdleMenu();
-bool resetMenu();
+long* resetMenu();
 void activateMenu();
 void selectMenu();
+
+
 
 #endif

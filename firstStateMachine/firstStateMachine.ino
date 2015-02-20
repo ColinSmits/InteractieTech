@@ -18,7 +18,8 @@ int numberOfDevices; // Number of temperature devices found
 DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address
 Button menuButton(17); //A3
 Button choiceButton(18); //A4
-
+Button sprayButton(19); // A5
+int amountOfSpraysLeft = 1250;
 
 #define echoPin 4// Echo Pin
 #define trigPin 3// Trigger Pin
@@ -27,24 +28,27 @@ Button choiceButton(18); //A4
 #define LDRPin 0 // Light Sensor
 #define magnetPin 15 // Magnetic sensor
 
-
+int menuActivatedCount = 0;
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
 long duration, d; // Duration used to calculate distance
 unsigned long previousMillisMotion = 0;
 unsigned long previousMillisDist = 0;
+unsigned long nr1Timer = 0;
+unsigned long nr2Timer = 0;
+unsigned long menuTimer = 0;
 unsigned long prevTempTime = 0;
 unsigned long tempDelay = 2000;
 unsigned long triggertime = 10000; // Set time (ms) you need to have no motion to change state 
 unsigned long distanceDelay = 250;
 unsigned long usageDelay = 15000;
-unsigned long menuTimer = 0;
-unsigned long menyDelay = 10000;
 unsigned long lastUsed = -usageDelay;
+unsigned long ledDelay = 15000;
 int minDistance = 25;
-
+unsigned long sprayTime = 15000;
+unsigned long sprayDelay = 25000;
 unsigned long decisionTime = 2000;
-
+unsigned long sprayButTimer = 0;
 int ledState = HIGH;         // the current state of the output pin
 int magnetState;             // the current reading from the input pin
 int lastMagnetState = LOW;
@@ -59,6 +63,11 @@ bool attemptToSit = false;
 bool attemptToStand = false;
 bool attemptToUse = false;
 bool attemptToFlee = false;
+bool nr1Done = false;
+bool nr2Done = false;
+bool nr1Light = false;
+bool nr2Light = false;
+bool sprayButtonTouched = false;
 
 unsigned long sitAttemptTime = 0;
 unsigned long standAttemptTime = 0;
@@ -87,8 +96,6 @@ bool menuActive = false;
 
 
 int motionTimer = 0;
-
-
 #include <LiquidCrystal.h>
 
 // initialize the library with the numbers of the interface pins
@@ -129,8 +136,69 @@ void setup() {
 
 void loop() {
  movingState = digitalRead(motionPin);
- magnetState = digitalRead(magnetPin);
+ //magnetState = digitalRead(magnetPin);
+ 
  unsigned long currentMillis = millis();
+ 
+ 
+ 
+ if (sprayButton.read() && currentMillis > decisionTime) {
+   lcd.clear();
+   lcd.setCursor(0,0);
+   lcd.print("Spraying in");
+   nr1Done = true;
+   nr1Timer = currentMillis;
+   sprayButtonTouched = true;
+   sprayButTimer = currentMillis;
+ }
+ 
+ if (currentMillis - sprayButTimer > sprayDelay){
+   sprayButtonTouched = false;
+ }
+ else if (sprayButtonTouched){
+   lcd.setCursor(0,0);
+   lcd.print("Spraying in");
+   lcd.setCursor(0,1);
+   lcd.print("seconds: ");
+   lcd.print("~");
+   lcd.print((sprayDelay  - (currentMillis - sprayButTimer))/ 1000);
+   lcd.print("  ");
+ }
+ 
+ if (nr1Done && currentMillis - nr1Timer > sprayDelay - ledDelay){
+   digitalWrite(ledPin, HIGH);
+   Serial.println("Light 1 on");
+   nr1Done = false;
+   nr1Light = true;
+ }
+ 
+ if ((nr1Light && currentMillis - nr1Timer > sprayDelay) || (nr2Light && currentMillis - nr2Timer > sprayDelay)){
+   digitalWrite(ledPin, LOW);
+   if (nr2Light){
+     nr1Done = true;
+     nr2Light = false;
+     Serial.println("Light 2 off");
+     nr1Timer = currentMillis;
+   }
+   else {
+     nr1Light = false;
+     Serial.println("Light 1 off");
+   }
+   
+   amountOfSpraysLeft -= 1;
+   lcd.clear();
+   lcd.setCursor(0,0);
+   lcd.print("Sprays left:");
+   lcd.setCursor(0,1);
+   lcd.print(amountOfSpraysLeft);
+ }
+ 
+ if (nr2Done && currentMillis - nr2Timer > sprayDelay - ledDelay){
+   nr2Light = true;
+   Serial.println("Light 2 on");
+   nr2Done = false;
+   digitalWrite(ledPin, HIGH);
+ }
  
   int reading = digitalRead(magnetPin);
   //Serial.print(reading);
@@ -154,19 +222,35 @@ void loop() {
       Serial.print("Change MAGNET");
       Serial.println();
       magnetState = reading;
-      ledState = !ledState;
+     // ledState = !ledState;
       
     }
   }
   
-  if (menuButton.read()){
+  if (menuButton.read() && currentMillis > decisionTime){
+    Serial.print("Activated Menu");
     activateMenu();
+    menuActivatedCount += 1;
     menuActive = true;
+    sitAttemptTime = 0;
+    standAttemptTime = 0;
+    useAttemptTime = 0;
+    standTime = 0;
+    sitTime = 0;
+    useTime = 0;
     menuTimer = currentMillis;
   }
   else {
-    if (!resetMenu()){
-      menuActive = false;
+    if (menuActive){
+      long* rb;
+      rb = resetMenu();
+      if (rb[0] == 0){
+         menuActive = false;
+         sprayDelay = rb[1];
+         if (rb[2] == 1){
+           amountOfSpraysLeft = 1250;
+         }
+      }        
     }
   }
   if (menuActive && choiceButton.read()){
@@ -174,7 +258,7 @@ void loop() {
   }
 
   // set the LED:
-  digitalWrite(ledPin, ledState);
+  //digitalWrite(ledPin, ledState);
 
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
@@ -206,7 +290,7 @@ void loop() {
    motionTimer = 0;
  }
  
- if (!menuActive && currentMillis - previousMillisDist >= distanceDelay && !roomEmpty){
+ if (!menuActive && currentMillis - previousMillisDist >= distanceDelay && !roomEmpty && !sprayButtonTouched){
        digitalWrite(trigPin, LOW); 
        delayMicroseconds(2); 
       
@@ -437,6 +521,9 @@ void checkDistanceState(int dist){
         lastUsed = current;
         Serial.println("Usage done...");
         usageDone(maxUseTime, maxStandTime, maxSitTime);
+        maxUseTime = 0;
+        maxStandTime = 0;
+        maxSitTime = 0;
       }
     }
     
@@ -463,7 +550,7 @@ void printTemperature(DeviceAddress deviceAddress)
   Serial.println(DallasTemperature::toFahrenheit(tempC)); // Converts tempC to Fahrenheit
 }
 
-void usageDone(int maxUse, int maxStand, int maxSit){
+void usageDone(unsigned long maxUse, unsigned long maxStand, unsigned long maxSit){
   Serial.print("checking usage...");
   Serial.print("Max Use: ");
   Serial.print(maxUse);
@@ -480,20 +567,22 @@ void usageDone(int maxUse, int maxStand, int maxSit){
     Serial.println("Not used");
     lcd.print("Nothing");
   }
-  else if (maxUse <= nr1Time || magnetState == LOW){
+  else if (maxUse <= nr1Time){
     Serial.println("Nr 1 done");
     Serial.println("Spray once");
     lcd.print("Spray: 1 time");
+    nr1Done = true;
+    nr1Timer = millis();
   }
   else if (maxUse > nr1Time){
     Serial.println("Nr 2 done");
     Serial.println("Spray twice");
     lcd.print("Spray: 2 times");
+    nr2Done = true;
+    nr2Timer = millis();
   }
     
 
 }
-
-
 
 
