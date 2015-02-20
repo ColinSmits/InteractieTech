@@ -1,13 +1,33 @@
-#define echoPin 3// Echo Pin
-#define trigPin 4// Trigger Pin
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+// Data wire is plugged into port 2 on the Arduino
+#define ONE_WIRE_BUS 2
+#define TEMPERATURE_PRECISION 9
+
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature. 
+DallasTemperature sensors(&oneWire);
+
+int numberOfDevices; // Number of temperature devices found
+
+DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address
+
+
+#define echoPin 4// Echo Pin
+#define trigPin 3// Trigger Pin
 #define LEDPin 13 // Onboard LED
-#define motionPin 2 // Motion Pin
+#define motionPin 6 // Motion Pin
 
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
 long duration, d; // Duration used to calculate distance
 unsigned long previousMillisMotion = 0;
 unsigned long previousMillisDist = 0;
+unsigned long prevTempTime = 0;
+unsigned long tempDelay = 3000;
 unsigned long triggertime = 2000; // Set time (ms) you need to have no motion to change state 
 unsigned long distanceDelay = 250;
 int minDistance = 25;
@@ -55,6 +75,38 @@ LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
 
 void setup() {
+  Serial.begin(9600);
+  sensors.begin();
+  
+  // Grab a count of devices on the wire
+  numberOfDevices = sensors.getDeviceCount();
+  for(int i=0;i<numberOfDevices; i++)
+  {
+    // Search the wire for address
+    if(sensors.getAddress(tempDeviceAddress, i))
+	{
+		Serial.print("Found device ");
+		Serial.print(i, DEC);
+		Serial.print(" with address: ");
+		//printAddress(tempDeviceAddress);
+		Serial.println();
+		
+		Serial.print("Setting resolution to ");
+		Serial.println(TEMPERATURE_PRECISION, DEC);
+		
+		// set the resolution to TEMPERATURE_PRECISION bit (Each Dallas/Maxim device is capable of several different resolutions)
+		sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
+		
+		 Serial.print("Resolution actually set to: ");
+		Serial.print(sensors.getResolution(tempDeviceAddress), DEC); 
+		Serial.println();
+	}else{
+		Serial.print("Found ghost device at ");
+		Serial.print(i, DEC);
+		Serial.print(" but could not detect address. Check power and cabling");
+	}
+  }
+  
  lcd.begin(16, 2);
  lcd.print("Room Empty");
  lcd.setCursor(0, 1);
@@ -70,31 +122,31 @@ void loop() {
  movingState = digitalRead(motionPin);
  unsigned long currentMillis = millis();
  
- //if (roomEmpty && movingState == HIGH){
- //  lcd.setCursor(0,0);
- //  lcd.print("Room inside");
- //  roomEmpty = false;
- //  motionTimer = 0;
- //}
+ if (roomEmpty && movingState == HIGH){
+   lcd.setCursor(0,0);
+   lcd.print("Room inside");
+   roomEmpty = false;
+   motionTimer = 0;
+ }
  
- //else if (!roomEmpty && !inUse && movingState == LOW){
- //  motionTimer += currentMillis - previousMillisMotion; //add ms to timer
- //  previousMillisMotion = currentMillis;
+ else if (!roomEmpty && !inUse && movingState == LOW){
+   motionTimer += currentMillis - previousMillisMotion; //add ms to timer
+   previousMillisMotion = currentMillis;
    
- //  if (motionTimer > triggertime){
- //    roomEmpty = true;
- //    lcd.setCursor(0,0);
- //    lcd.print("              ");
- //    lcd.setCursor(0,0);
- //    lcd.print("Room empty");
- //    motionTimer = 0;
- //  }
- //}
+   if (motionTimer > triggertime){
+     roomEmpty = true;
+     lcd.setCursor(0,0);
+     lcd.print("              ");
+     lcd.setCursor(0,0);
+     lcd.print("Room empty");
+     motionTimer = 0;
+   }
+ }
  
- //if (inUse){
- //  motionTimer = 0;
- //  previousMillisMotion = currentMillis;
- //}
+ if (inUse){
+   motionTimer = 0;
+   previousMillisMotion = currentMillis;
+ }
  
  if (currentMillis - previousMillisDist >= distanceDelay){ //&& !roomEmpty){
        digitalWrite(trigPin, LOW); 
@@ -111,6 +163,32 @@ void loop() {
      
        checkDistanceState(d);
        previousMillisDist = currentMillis;
+ }
+ 
+ if (currentMillis - prevTempTime >= tempDelay){
+  Serial.print("Requesting temperatures...");
+  sensors.requestTemperatures(); // Send the command to get temperatures
+  Serial.println("DONE");
+  
+  
+  // Loop through each device, print out temperature data
+  for(int i=0;i<numberOfDevices; i++)
+  {
+    // Search the wire for address
+    if(sensors.getAddress(tempDeviceAddress, i))
+	{
+		// Output the device ID
+		Serial.print("Temperature for device: ");
+		Serial.println(i,DEC);
+		
+		// It responds almost immediately. Let's print out the data
+		printTemperature(tempDeviceAddress); // Use a simple function to print out the data
+	} 
+	//else ghost device! Check your power requirements and cabling
+	
+  }
+  
+  prevTempTime = currentMillis;
  }
 }
 
@@ -287,6 +365,22 @@ void checkDistanceState(int dist){
   
 }
 
+// function to print the temperature for a device
+void printTemperature(DeviceAddress deviceAddress)
+{
+  // method 1 - slower
+  //Serial.print("Temp C: ");
+  //Serial.print(sensors.getTempC(deviceAddress));
+  //Serial.print(" Temp F: ");
+  //Serial.print(sensors.getTempF(deviceAddress)); // Makes a second call to getTempC and then converts to Fahrenheit
+
+  // method 2 - faster
+  float tempC = sensors.getTempC(deviceAddress);
+  Serial.print("Temp C: ");
+  Serial.print(tempC);
+  Serial.print(" Temp F: ");
+  Serial.println(DallasTemperature::toFahrenheit(tempC)); // Converts tempC to Fahrenheit
+}
 
 
 
