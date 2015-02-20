@@ -19,7 +19,7 @@ DeviceAddress tempDeviceAddress; // We'll use this variable to store a found dev
 #define echoPin 4// Echo Pin
 #define trigPin 3// Trigger Pin
 #define LEDPin 13 // Onboard LED
-#define motionPin 6 // Motion Pin
+#define motionPin 5 // Motion Pin
 #define LDRPin 0
 
 int maximumRange = 200; // Maximum range needed
@@ -28,14 +28,14 @@ long duration, d; // Duration used to calculate distance
 unsigned long previousMillisMotion = 0;
 unsigned long previousMillisDist = 0;
 unsigned long prevTempTime = 0;
-unsigned long tempDelay = 3000;
-unsigned long triggertime = 2000; // Set time (ms) you need to have no motion to change state 
+unsigned long tempDelay = 2000;
+unsigned long triggertime = 10000; // Set time (ms) you need to have no motion to change state 
 unsigned long distanceDelay = 250;
-unsigned long usageDelay = 30000;
+unsigned long usageDelay = 15000;
 unsigned long lastUsed = -usageDelay;
 int minDistance = 25;
 
-unsigned long decisionTime = 1000;
+unsigned long decisionTime = 2000;
 
 //Distance helper variables
 bool sitting = false;
@@ -90,11 +90,7 @@ void setup() {
     // Search the wire for address
     if(sensors.getAddress(tempDeviceAddress, i))
 	{
-		
 		sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
-		
-	}else{
-		
 	}
   }
   
@@ -137,10 +133,9 @@ void loop() {
  
  if (inUse){
    motionTimer = 0;
-   previousMillisMotion = currentMillis;
  }
  
- if (currentMillis - previousMillisDist >= distanceDelay){ //&& !roomEmpty){
+ if (currentMillis - previousMillisDist >= distanceDelay && !roomEmpty){
        digitalWrite(trigPin, LOW); 
        delayMicroseconds(2); 
       
@@ -175,7 +170,19 @@ void loop() {
 		
 		// It responds almost immediately. Let's print out the data
 		printTemperature(tempDeviceAddress); // Use a simple function to print out the data
-	} 
+                if (currentMillis - lastUsed < usageDelay){
+                  lcd.clear();
+                  float tempC = sensors.getTempC(tempDeviceAddress);
+                  lcd.print("Temp C:");
+                  lcd.print(tempC);
+                  lcd.setCursor(0,1);
+                  lcd.print("Empty: ");
+                  lcd.print(roomEmpty);
+                  Serial.print("On LCD");
+                  Serial.println();
+                  }
+               
+        }
 	//else ghost device! Check your power requirements and cabling
 	
   }
@@ -191,172 +198,177 @@ void checkDistanceState(int dist){
   unsigned long current = millis();
   unsigned long timeDif = current - previousDistState;
   bool far = (dist > standDistance);
-  previousDistState = current;
-  
-  if (!inUse && current - lastUsed >= usageDelay){
-    if (!attemptToUse && !far){
-      attemptToUse = true;
-      useAttemptTime = 0;
-    }
-    else if (attemptToUse && !far && useAttemptTime < decisionTime){
-     useAttemptTime += timeDif; 
-    }
-    else if (attemptToUse && !far && useAttemptTime >= decisionTime){
-      inUse = true;
-      useTime = 0;
-      standing = true;
-      standTime = 0;
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print("In Use");
-      lcd.setCursor(0,1);
-      lcd.print("Standing");
-      attemptToUse = false;
-    }
-    
-    else{
-      useAttemptTime = 0;
-    }
+  if (!far){
+    fleeAttemptTime = 0;
   }
-  
-  
-  
-  else if (standing){
-    bool sitClose = (dist <= sitDistance);
-    bool standClose = (dist <= standDistance);
-    
-    if (standClose && !sitClose){
-      standTime += timeDif;
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print(dist);
-      lcd.setCursor(0,1);
-      lcd.print("Standing ");
-      lcd.print(standTime / 1000);
-      useTime += timeDif;
-    }
-    
-    else {
-      if (!sitting && sitClose && !attemptToSit){
-        attemptToSit = true;
-        sitAttemptTime = 0;
+  previousDistState = current;
+  if (current - lastUsed >= usageDelay){
+    if (!inUse){
+      if (!attemptToUse && !far){
+        attemptToUse = true;
+        useAttemptTime = 0;
       }
-      else if (attemptToSit && sitClose && sitAttemptTime < decisionTime){
-        sitAttemptTime += timeDif;
+      else if (attemptToUse && !far && useAttemptTime < decisionTime){
+       useAttemptTime += timeDif; 
       }
-      
-      else if (attemptToSit && sitClose && sitAttemptTime >= decisionTime){
-        sitting = true;
+      else if (attemptToUse && !far && useAttemptTime >= decisionTime){
+        inUse = true;
+        useTime = 0;
+        standing = true;
+        standTime = 0;
         lcd.clear();
         lcd.setCursor(0,0);
-        //lcd.print("In Use");
-        lcd.setCursor(0,1);
-        lcd.print("Sitting");
-        maxStandTime = max(maxStandTime, standTime);
-        standing = false;
-        standTime = 0;
-        sitTime = 0;
-        attemptToSit = false;      
-      }
-      else {
-        sitAttemptTime = 0;
-      }
-    }
-    
-  }
-  
-  else if (sitting){
-    bool sitClose = (dist <= sitDistance);
-    bool standClose = (dist <= standDistance);
-    
-    if (sitClose){
-      sitTime += timeDif;
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print(timeDif);
-      lcd.setCursor(0,1);
-      lcd.print("Sitting ");
-      lcd.print(sitTime / 1000);
-      useTime += timeDif;
-    }
-    
-    else {
-      if (!sitClose && standClose && !attemptToStand){
-        attemptToStand = true;
-        standAttemptTime = 0;
-      }
-      else if (!sitClose && standClose && attemptToStand && standAttemptTime < decisionTime){
-        standAttemptTime += timeDif;
-      }
-      else if (!sitClose && standClose && attemptToStand && standAttemptTime >= decisionTime){
-        standing = true;
-        sitting = false;
+        lcd.print("In Use");
         lcd.setCursor(0,1);
         lcd.print("Standing");
-        maxSitTime = max(maxSitTime, sitTime);
-        sitTime = 0;
-        standTime = 0;
-        attemptToStand = false;
+        attemptToUse = false;
       }
-      else {
-        standAttemptTime = 0;
-      }
-    }
-  }
-  
-  
-  if (far && current - lastUsed >= usageDelay){
-    if (!attemptToFlee && far){
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print("fleeing");
-      lcd.setCursor(0,1);
-      if (standing){
-        lcd.print("Standing");
-      }
-      else {
-        lcd.print("Sitting");
-      }
-      attemptToFlee = true;
-      fleeAttemptTime = 0;
-    }
-    else if (attemptToFlee && fleeAttemptTime < decisionTime && far){
-      fleeAttemptTime += timeDif;
-    }
-    else if (attemptToFlee && fleeAttemptTime >= decisionTime && far){
-      inUse = false;
       
-      if (standing){
-        maxStandTime = max(maxStandTime, standTime); 
+      else{
+        useAttemptTime = 0;
       }
-      if (sitting){
-        maxSitTime = max(maxSitTime, sitTime);
-      }
-      standing = false;
-      sitTime = 0;
-      standTime = 0;
-      sitting = false;
-      maxUseTime = max(maxUseTime, useTime);
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print("Max use: ");
-      lcd.print(maxUseTime / 1000);
-      lcd.setCursor(0,1);
-      if (maxSitTime > 0){
-        lcd.print("Sit for ");
-        lcd.print(maxSitTime / 1000);
-        lcd.print("s");
-      }
-      else {
-        lcd.print("Stood for ");
-        lcd.print(maxStandTime / 1000);
-        lcd.print("s");
-      }
-      useTime = 0;
-      lastUsed = current;
-      Serial.println("Usage done...");
-      usageDone(maxUseTime, maxStandTime, maxSitTime);
     }
+    
+    
+    
+    else if (standing){
+      bool sitClose = (dist <= sitDistance);
+      bool standClose = (dist <= standDistance);
+      
+      if (standClose && !sitClose){
+        standTime += timeDif;
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print(dist);
+        lcd.setCursor(0,1);
+        lcd.print("Standing ");
+        lcd.print(standTime / 1000);
+        useTime += timeDif;
+      }
+      
+      else {
+        if (!sitting && sitClose && !attemptToSit){
+          attemptToSit = true;
+          sitAttemptTime = 0;
+        }
+        else if (attemptToSit && sitClose && sitAttemptTime < decisionTime){
+          sitAttemptTime += timeDif;
+        }
+        
+        else if (attemptToSit && sitClose && sitAttemptTime >= decisionTime){
+          sitting = true;
+          lcd.clear();
+          lcd.setCursor(0,0);
+          //lcd.print("In Use");
+          lcd.setCursor(0,1);
+          lcd.print("Sitting");
+          maxStandTime = max(maxStandTime, standTime);
+          standing = false;
+          standTime = 0;
+          sitTime = 0;
+          attemptToSit = false;      
+        }
+        else {
+          sitAttemptTime = 0;
+        }
+      }
+      
+    }
+    
+    else if (sitting){
+      bool sitClose = (dist <= sitDistance);
+      bool standClose = (dist <= standDistance);
+      
+      if (sitClose){
+        sitTime += timeDif;
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print(timeDif);
+        lcd.setCursor(0,1);
+        lcd.print("Sitting ");
+        lcd.print(sitTime / 1000);
+        useTime += timeDif;
+      }
+      
+      else {
+        if (!sitClose && standClose && !attemptToStand){
+          attemptToStand = true;
+          standAttemptTime = 0;
+        }
+        else if (!sitClose && standClose && attemptToStand && standAttemptTime < decisionTime){
+          standAttemptTime += timeDif;
+        }
+        else if (!sitClose && standClose && attemptToStand && standAttemptTime >= decisionTime){
+          standing = true;
+          sitting = false;
+          lcd.setCursor(0,1);
+          lcd.print("Standing");
+          maxSitTime = max(maxSitTime, sitTime);
+          sitTime = 0;
+          standTime = 0;
+          attemptToStand = false;
+        }
+        else {
+          standAttemptTime = 0;
+        }
+      }
+    }
+    
+    
+    if (far && inUse && current - lastUsed >= usageDelay){
+      if (!attemptToFlee && far){
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("fleeing");
+        lcd.setCursor(0,1);
+        if (standing){
+          lcd.print("Standing");
+        }
+        else {
+          lcd.print("Sitting");
+        }
+        attemptToFlee = true;
+        fleeAttemptTime = 0;
+      }
+      else if (attemptToFlee && fleeAttemptTime < decisionTime && far){
+        fleeAttemptTime += timeDif;
+      }
+      else if (attemptToFlee && fleeAttemptTime >= decisionTime && far){
+        inUse = false;
+        
+        if (standing){
+          maxStandTime = max(maxStandTime, standTime); 
+        }
+        if (sitting){
+          maxSitTime = max(maxSitTime, sitTime);
+        }
+        standing = false;
+        sitTime = 0;
+        standTime = 0;
+        sitting = false;
+        maxUseTime = max(maxUseTime, useTime);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Max use: ");
+        lcd.print(maxUseTime / 1000);
+        lcd.setCursor(0,1);
+        if (maxSitTime > 0){
+          lcd.print("Sit for ");
+          lcd.print(maxSitTime / 1000);
+          lcd.print("s");
+        }
+        else {
+          lcd.print("Stood for ");
+          lcd.print(maxStandTime / 1000);
+          lcd.print("s");
+        }
+        useTime = 0;
+        lastUsed = current;
+        Serial.println("Usage done...");
+        usageDone(maxUseTime, maxStandTime, maxSitTime);
+      }
+    }
+    
   }
     
     
@@ -384,15 +396,6 @@ void usageDone(int maxUse, int maxStand, int maxSit){
   Serial.print("checking usage...");
   Serial.print("Max Use: ");
   Serial.print(maxUse);
-  Serial.println();
-  Serial.print("Nr1 Time:  ");
-  Serial.print(nr1Time);
-  Serial.println();
-  Serial.print("Max use < min time?: ");
-  Serial.print(maxUse < minimumTime);
-  Serial.println();
-  Serial.print("Max use < nr1Time?: ");
-  Serial.print(maxUse < nr1Time);
   Serial.println();
   Serial.print("Max Stand: ");
   Serial.print(maxStand);
