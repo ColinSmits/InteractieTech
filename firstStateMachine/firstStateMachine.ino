@@ -2,6 +2,7 @@
 #include <DallasTemperature.h>
 #include <Menu.h>
 #include <Button.h>
+#include <EEPROM.h>
 
 // Data wire is plugged into port 2 on the Arduino
 #define ONE_WIRE_BUS 2
@@ -10,7 +11,7 @@
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
 int numberOfDevices; // Number of temperature devices found
@@ -26,7 +27,9 @@ int amountOfSpraysLeft = EEPROM.read(1);
 #define ledPin 13 // Onboard LED
 #define motionPin 5 // Motion Pin
 #define LDRPin 0 // Light Sensor
-#define magnetPin 15 // Magnetic sensor
+#define magnetPin 6 // Magnetic sensor
+#define greenLED 19 //
+#define redLED 18 //
 
 int menuActivatedCount = 0;
 int maximumRange = 200; // Maximum range needed
@@ -39,7 +42,7 @@ unsigned long nr2Timer = 0;
 unsigned long menuTimer = 0;
 unsigned long prevTempTime = 0;
 unsigned long tempDelay = 2000;
-unsigned long triggertime = 10000; // Set time (ms) you need to have no motion to change state 
+unsigned long triggertime = 10000; // Set time (ms) you need to have no motion to change state
 unsigned long distanceDelay = 250;
 unsigned long usageDelay = 15000;
 unsigned long lastUsed = -usageDelay;
@@ -54,7 +57,12 @@ int magnetState;             // the current reading from the input pin
 int lastMagnetState = LOW;
 
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 50; 
+long debounceDelay = 50;
+
+long redTimer = 0;
+long greenTimer = 0;
+bool redOn = false;
+bool greenOn = false;
 
 //Distance helper variables
 bool sitting = false;
@@ -105,110 +113,43 @@ LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 void setup() {
   Serial.begin(9600);
   sensors.begin();
-  
+
   // Grab a count of devices on the wire
   numberOfDevices = sensors.getDeviceCount();
-  for(int i=0;i<numberOfDevices; i++)
+  for (int i = 0; i < numberOfDevices; i++)
   {
     // Search the wire for address
-    if(sensors.getAddress(tempDeviceAddress, i))
-	{
-		sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
-	}
+    if (sensors.getAddress(tempDeviceAddress, i))
+    {
+      sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
+    }
   }
-  
- lcd.begin(16, 2);
 
- initializeMenu(&lcd);
- showIdleMenu();
- 
- lcd.setCursor(0,0);
- lcd.print("Room Empty");
- lcd.setCursor(0, 1);
- lcd.print("Not in Use");
- pinMode(trigPin, OUTPUT);
- pinMode(echoPin, INPUT);
- pinMode(motionPin, INPUT);
- pinMode(ledPin, OUTPUT); // Use LED indicator (if required)
- pinMode(LDRPin, INPUT);
- pinMode(magnetPin, INPUT);
+  lcd.begin(16, 2);
+
+  initializeMenu(&lcd);
+  showIdleMenu();
+  sprayDelay = EEPROM.read(15) * 1000;
+  pinMode(redLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(motionPin, INPUT);
+  pinMode(ledPin, OUTPUT); // Use LED indicator (if required)
+  pinMode(LDRPin, INPUT);
+  pinMode(magnetPin, INPUT);
 }
 
 void loop() {
- movingState = digitalRead(motionPin);
- //magnetState = digitalRead(magnetPin);
- 
- unsigned long currentMillis = millis();
- 
- 
- 
- if (sprayButton.read() && currentMillis > (decisionTime + sprayButTimer)) {
-   lcd.clear();
-   lcd.setCursor(0,0);
-   lcd.print("Spraying in");
-   nr1Done = true;
-   nr1Timer = currentMillis;
-   sprayButtonTouched = true;
-   sprayButTimer = currentMillis;
- }
- 
- if (currentMillis - sprayButTimer > sprayDelay){
-   sprayButtonTouched = false;
- }
- else if (sprayButtonTouched){
-   lcd.setCursor(0,0);
-   lcd.print("Spraying in");
-   lcd.setCursor(0,1);
-   lcd.print("seconds: ");
-   lcd.print("~");
-   lcd.print((sprayDelay  - (currentMillis - sprayButTimer))/ 1000);
-   lcd.print("  ");
- }
- 
- if (nr1Done && currentMillis - nr1Timer > sprayDelay - ledDelay){
-   digitalWrite(ledPin, HIGH);
-   Serial.println("Light 1 on");
-   nr1Done = false;
-   nr1Light = true;
- }
- 
- if ((nr1Light && currentMillis - nr1Timer > sprayDelay) || (nr2Light && currentMillis - nr2Timer > sprayDelay)){
-   digitalWrite(ledPin, LOW);
-   if (nr2Light){
-     nr1Done = true;
-     nr2Light = false;
-     Serial.println("Light 2 off");
-     nr1Timer = currentMillis;
-   }
-   else {
-     nr1Light = false;
-     Serial.println("Light 1 off");
-   }
-   
-   amountOfSpraysLeft = EEPROM.read(1) - 1;
-   EEPROM.write(1, amountOfSpraysLeft);
-   
-   lcd.clear();
-   lcd.setCursor(0,0);
-   lcd.print("Sprays left:");
-   lcd.setCursor(0,1);
-   lcd.print(amountOfSpraysLeft);
-   
- }
- 
- if (nr2Done && currentMillis - nr2Timer > sprayDelay - ledDelay){
-   nr2Light = true;
-   Serial.println("Light 2 on");
-   nr2Done = false;
-   digitalWrite(ledPin, HIGH);
- }
- 
+  movingState = digitalRead(motionPin);
+  magnetState = digitalRead(magnetPin);
+
+  unsigned long currentMillis = millis();
+
+
+  spraying(currentMillis);
+
   int reading = digitalRead(magnetPin);
-  //Serial.print(reading);
-  //Serial.println();
-  // check to see if you just pressed the button
-  // (i.e. the input went from LOW to HIGH),  and you've waited
-  // long enough since the last press to ignore any noise:
 
   // If the switch changed, due to noise or pressing:
   if (reading != lastMagnetState) {
@@ -222,16 +163,11 @@ void loop() {
 
     // if the button state has changed:
     if (reading != magnetState) {
-      Serial.print("Change MAGNET");
-      Serial.println();
       magnetState = reading;
-     // ledState = !ledState;
-      
     }
   }
-  
-  if (menuButton.read()){
-    Serial.print("Activated Menu");
+
+  if (menuButton.read() && currentMillis > 500) {
     activateMenu();
     menuActivatedCount += 1;
     menuActive = true;
@@ -244,20 +180,21 @@ void loop() {
     menuTimer = currentMillis;
   }
   else {
-    if (menuActive){
+    if (menuActive) {
       long* rb;
       rb = resetMenu();
-      if (rb[0] == 0){
-         menuActive = false;
-         sprayDelay = rb[1];
-         if (rb[2] == 1){
-           EEPROM.write(1, 1250);
-           amountOfSpraysLeft = 1250;
-         }
-      }        
+      if (rb[0] == 0) {
+        menuActive = false;
+        sprayDelay = rb[1];
+        EEPROM.write(15, sprayDelay / 1000);
+        if (rb[2] == 0) {
+          eepromWrite(2243);
+          eepromRead();          
+        }
+      }
     }
   }
-  if (menuActive && choiceButton.read()){
+  if (menuActive && choiceButton.read()) {
     selectMenu();
   }
 
@@ -267,328 +204,396 @@ void loop() {
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
   lastMagnetState = reading;
-  
- 
- if (roomEmpty && movingState == HIGH){
-   lcd.setCursor(0,0);
-   lcd.print("Room inside");
-   roomEmpty = false;
-   motionTimer = 0;
- }
- 
- else if (!roomEmpty && !inUse && movingState == LOW){
-   motionTimer += currentMillis - previousMillisMotion; //add ms to timer
-   previousMillisMotion = currentMillis;
-   
-   if (motionTimer > triggertime){
-     roomEmpty = true;
-     lcd.setCursor(0,0);
-     lcd.print("           ");
-     lcd.setCursor(0,0);
-     lcd.print("Room empty");
-     lcd.setCursor(0,1);
-     lcd.print("Not in Use");
-     motionTimer = 0;
-   }
- }
- 
- if (inUse){
-   motionTimer = 0;
- }
- 
- if (!menuActive && currentMillis - previousMillisDist >= distanceDelay && !roomEmpty && !sprayButtonTouched){
-       digitalWrite(trigPin, LOW); 
-       delayMicroseconds(2); 
-      
-       digitalWrite(trigPin, HIGH);
-       delayMicroseconds(10); 
-       
-       digitalWrite(trigPin, LOW);
-       duration = pulseIn(echoPin, HIGH);
-       
-       //Calculate the distance (in cm) based on the speed of sound.
-       d = duration/58.2;
-     
-       checkDistanceState(d);
-       previousMillisDist = currentMillis;
- }
- 
- if (currentMillis - prevTempTime >= tempDelay){
-  Serial.print("Requesting temperatures...");
-  sensors.requestTemperatures(); // Send the command to get temperatures
-  Serial.println("DONE");
-  
-  
-  // Loop through each device, print out temperature data
-  for(int i=0;i<numberOfDevices; i++)
-  {
-    // Search the wire for address
-    if(sensors.getAddress(tempDeviceAddress, i))
-	{
-		// Output the device ID
-		Serial.print("Temperature for device: ");
-		Serial.println(i,DEC);
-		
-		// It responds almost immediately. Let's print out the data
-		printTemperature(tempDeviceAddress); // Use a simple function to print out the data
-                if (currentMillis - lastUsed < usageDelay){
-                  //lcd.clear();
-                  float tempC = sensors.getTempC(tempDeviceAddress);
-                  //lcd.print("Temp C:");
-                  //lcd.print(tempC);
-                  //lcd.setCursor(0,1);
-                  //lcd.print("Empty: ");
-                  //lcd.print(roomEmpty);
-                  Serial.print("On LCD");
-                  Serial.println();
-                  }
-               
+
+  if (!menuActive) {
+    if (roomEmpty && movingState == HIGH) {
+      roomEmpty = false;
+      digitalWrite(redLED, HIGH);
+      redOn = true;
+      motionTimer = 0;
+    }
+
+    else if (!roomEmpty && !inUse && movingState == LOW) {
+      motionTimer += currentMillis - previousMillisMotion; //add ms to timer
+      previousMillisMotion = currentMillis;
+
+      if (motionTimer > triggertime) {
+        roomEmpty = true;
+        digitalWrite(redLED, LOW);
+        motionTimer = 0;
+      }
+
+    }
+
+    if (inUse) {
+      motionTimer = 0;
+    }
+
+    if (currentMillis - previousMillisDist >= distanceDelay && !roomEmpty && !sprayButtonTouched) {
+      digitalWrite(trigPin, LOW);
+      delayMicroseconds(2);
+
+      digitalWrite(trigPin, HIGH);
+      delayMicroseconds(10);
+
+      digitalWrite(trigPin, LOW);
+      duration = pulseIn(echoPin, HIGH);
+
+      //Calculate the distance (in cm) based on the speed of sound.
+      d = duration / 58.2;
+
+      checkDistanceState(d);
+      previousMillisDist = currentMillis;
+    }
+
+    if (currentMillis - prevTempTime >= tempDelay) {
+
+      sensors.requestTemperatures(); // Send the command to get temperatures
+
+      // Loop through each device, print out temperature data
+      for (int i = 0; i < numberOfDevices; i++)
+      {
+        // Search the wire for address
+        if (sensors.getAddress(tempDeviceAddress, i))
+        {
+          // Output the device ID
+
+          // It responds almost immediately. Let's print out the data
+          printTemperature(tempDeviceAddress); // Use a simple function to print out the data
+          
+            //lcd.clear();
+            float tempC = sensors.getTempC(tempDeviceAddress);
+            //lcd.setCursor(0, 1);
+           // lcd.print("Temp C: ");
+           // lcd.print(tempC);
+          
+
         }
-	//else ghost device! Check your power requirements and cabling
-	
+        //else ghost device! Check your power requirements and cabling
+
+      }
+
+      int light = analogRead(LDRPin);
+      prevTempTime = currentMillis;
+    }
   }
-  
-  int light = analogRead(LDRPin);
-  Serial.println("The current light =:");
-  Serial.println(light);
-  prevTempTime = currentMillis;
- }
 }
 
-void checkDistanceState(int dist){
+void checkDistanceState(int dist) {
   unsigned long current = millis();
   unsigned long timeDif = current - previousDistState;
   bool far = (dist > standDistance);
-  if (!far){
+  if (!far) {
     fleeAttemptTime = 0;
   }
   previousDistState = current;
-  if (current - lastUsed >= usageDelay){
-    if (!inUse){
-      if (!attemptToUse && !far){
+  if (current - lastUsed >= usageDelay) {
+    //add Magnetic sensor
+    if (!inUse) {
+      if (!attemptToUse && !far) {
         attemptToUse = true;
         useAttemptTime = 0;
       }
-      else if (attemptToUse && !far && useAttemptTime < decisionTime){
-       useAttemptTime += timeDif; 
+      else if (attemptToUse && !far && useAttemptTime < decisionTime) {
+        useAttemptTime += timeDif;
       }
-      else if (attemptToUse && !far && useAttemptTime >= decisionTime){
+      else if (attemptToUse && !far && useAttemptTime >= decisionTime) {
         inUse = true;
+        greenOn = true;
+        digitalWrite(greenLED, HIGH);
+        digitalWrite(redLED, LOW);
         useTime = 0;
         standing = true;
         standTime = 0;
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("In Use");
-        lcd.setCursor(0,1);
-        lcd.print("Standing");
         attemptToUse = false;
       }
-      
-      else{
+
+      else {
         useAttemptTime = 0;
       }
     }
-    
-    
-    
-    else if (standing){
+
+
+
+    else if (standing) {
       bool sitClose = (dist <= sitDistance);
       bool standClose = (dist <= standDistance);
       
-      if (standClose && !sitClose){
+      if (current - greenTimer > 500) {
+            if (greenOn) {
+              digitalWrite(greenLED, LOW);
+              greenOn = false;
+              digitalWrite(redLED, LOW);
+              redOn = false;
+
+            }
+            else {
+              digitalWrite(greenLED, HIGH);
+              greenOn = true;
+              digitalWrite(redLED, HIGH);
+              redOn = true;
+            }
+            greenTimer = current;
+        }
+        
+      if (standClose && !sitClose) {
         standTime += timeDif;
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print(dist);
-        lcd.setCursor(0,1);
-        lcd.print("Standing ");
-        lcd.print(standTime / 1000);
         useTime += timeDif;
       }
-      
-      else {
-        if (!sitting && sitClose && !attemptToSit){
-          attemptToSit = true;
-          sitAttemptTime = 0;
-        }
-        else if (attemptToSit && sitClose && sitAttemptTime < decisionTime){
-          sitAttemptTime += timeDif;
-        }
         
-        else if (attemptToSit && sitClose && sitAttemptTime >= decisionTime){
-          sitting = true;
-          lcd.clear();
-          lcd.setCursor(0,0);
-          //lcd.print("In Use");
-          lcd.setCursor(0,1);
-          lcd.print("Sitting");
-          maxStandTime = max(maxStandTime, standTime);
-          standing = false;
-          standTime = 0;
-          sitTime = 0;
-          attemptToSit = false;      
-        }
+
         else {
-          sitAttemptTime = 0;
+          if (!sitting && sitClose && !attemptToSit) {
+            attemptToSit = true;
+            sitAttemptTime = 0;
+          }
+          else if (attemptToSit && sitClose && sitAttemptTime < decisionTime) {
+            sitAttemptTime += timeDif;
+          }
+
+          else if (attemptToSit && sitClose && sitAttemptTime >= decisionTime) {
+            sitting = true;
+            maxStandTime = max(maxStandTime, standTime);
+            standing = false;
+            standTime = 0;
+            sitTime = 0;
+            attemptToSit = false;
+          }
+          else {
+            sitAttemptTime = 0;
+          }
         }
+
       }
-      
-    }
-    
-    else if (sitting){
-      bool sitClose = (dist <= sitDistance);
-      bool standClose = (dist <= standDistance);
-      
-      if (sitClose){
-        sitTime += timeDif;
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print(timeDif);
-        lcd.setCursor(0,1);
-        lcd.print("Sitting ");
-        lcd.print(sitTime / 1000);
-        useTime += timeDif;
-      }
-      
-      else {
-        if (!sitClose && standClose && !attemptToStand){
-          attemptToStand = true;
-          standAttemptTime = 0;
-        }
-        else if (!sitClose && standClose && attemptToStand && standAttemptTime < decisionTime){
-          standAttemptTime += timeDif;
-        }
-        else if (!sitClose && standClose && attemptToStand && standAttemptTime >= decisionTime){
-          standing = true;
-          sitting = false;
-          lcd.setCursor(0,1);
-          lcd.print("Standing");
-          maxSitTime = max(maxSitTime, sitTime);
-          sitTime = 0;
-          standTime = 0;
-          attemptToStand = false;
-        }
-        else {
-          standAttemptTime = 0;
-        }
-      }
-    }
-    
-    
-    if (far && inUse && current - lastUsed >= usageDelay){
-      if (!attemptToFlee && far){
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("fleeing");
-        lcd.setCursor(0,1);
-        if (standing){
-          lcd.print("Standing");
-        }
-        else {
-          lcd.print("Sitting");
-        }
-        attemptToFlee = true;
-        fleeAttemptTime = 0;
-      }
-      else if (attemptToFlee && fleeAttemptTime < decisionTime && far){
-        fleeAttemptTime += timeDif;
-      }
-      else if (attemptToFlee && fleeAttemptTime >= decisionTime && far){
-        inUse = false;
+
+      else if (sitting) {
+        bool sitClose = (dist <= sitDistance);
+        bool standClose = (dist <= standDistance);
         
-        if (standing){
-          maxStandTime = max(maxStandTime, standTime); 
+        if (current - greenTimer > 1500) {
+            if (greenOn) {
+              digitalWrite(greenLED, LOW);
+              greenOn = false;
+              digitalWrite(redLED, LOW);
+              redOn = false;
+
+            }
+            else {
+              digitalWrite(greenLED, HIGH);
+              greenOn = true;
+              digitalWrite(redLED, HIGH);
+              redOn = true;
+            }
+            greenTimer = current;
         }
-        if (sitting){
-          maxSitTime = max(maxSitTime, sitTime);
+
+        if (sitClose) {
+          sitTime += timeDif;
+          useTime += timeDif;
+          
+          }
+
+          else {
+            if (!sitClose && standClose && !attemptToStand) {
+              attemptToStand = true;
+              standAttemptTime = 0;
+            }
+            else if (!sitClose && standClose && attemptToStand && standAttemptTime < decisionTime) {
+              standAttemptTime += timeDif;
+            }
+            else if (!sitClose && standClose && attemptToStand && standAttemptTime >= decisionTime) {
+              standing = true;
+              sitting = false;
+              maxSitTime = max(maxSitTime, sitTime);
+              sitTime = 0;
+              standTime = 0;
+              attemptToStand = false;
+            }
+            else {
+              standAttemptTime = 0;
+            }
+          }
         }
-        standing = false;
-        sitTime = 0;
-        standTime = 0;
-        sitting = false;
-        maxUseTime = max(maxUseTime, useTime);
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Max use: ");
-        lcd.print(maxUseTime / 1000);
-        lcd.setCursor(0,1);
-        if (maxSitTime > 0){
-          lcd.print("Sit for ");
-          lcd.print(maxSitTime / 1000);
-          lcd.print("s");
+
+
+        if (far && inUse && current - lastUsed >= usageDelay) {
+          if (!attemptToFlee && far) {
+            attemptToFlee = true;
+            fleeAttemptTime = 0;
+          }
+          else if (attemptToFlee && fleeAttemptTime < decisionTime && far) {
+            fleeAttemptTime += timeDif;
+          }
+          else if (attemptToFlee && fleeAttemptTime >= decisionTime && far) {
+            inUse = false;
+
+            if (standing) {
+              maxStandTime = max(maxStandTime, standTime);
+            }
+            if (sitting) {
+              maxSitTime = max(maxSitTime, sitTime);
+            }
+            standing = false;
+            sitTime = 0;
+            standTime = 0;
+            sitting = false;
+            maxUseTime = max(maxUseTime, useTime);
+            useTime = 0;
+            lastUsed = current;
+            digitalWrite(redLED, LOW);
+            digitalWrite(greenLED, HIGH);
+            usageDone(maxUseTime, maxStandTime, maxSitTime);
+            maxUseTime = 0;
+            maxStandTime = 0;
+            maxSitTime = 0;
+          }
         }
-        else {
-          lcd.print("Stood for ");
-          lcd.print(maxStandTime / 1000);
-          lcd.print("s");
-        }
-        useTime = 0;
-        lastUsed = current;
-        Serial.println("Usage done...");
-        usageDone(maxUseTime, maxStandTime, maxSitTime);
-        maxUseTime = 0;
-        maxStandTime = 0;
-        maxSitTime = 0;
+
       }
-    }
-    
-  }
-    
+
+
+
     
   
 }
 
-// function to print the temperature for a device
-void printTemperature(DeviceAddress deviceAddress)
-{
-  // method 1 - slower
-  //Serial.print("Temp C: ");
-  //Serial.print(sensors.getTempC(deviceAddress));
-  //Serial.print(" Temp F: ");
-  //Serial.print(sensors.getTempF(deviceAddress)); // Makes a second call to getTempC and then converts to Fahrenheit
+  // function to print the temperature for a device
+  void printTemperature(DeviceAddress deviceAddress)
+  {
+    // method 1 - slower
+    //Serial.print("Temp C: ");
+    //Serial.print(sensors.getTempC(deviceAddress));
+    //Serial.print(" Temp F: ");
+    //Serial.print(sensors.getTempF(deviceAddress)); // Makes a second call to getTempC and then converts to Fahrenheit
 
-  // method 2 - faster
-  float tempC = sensors.getTempC(deviceAddress);
-  Serial.print("Temp C: ");
-  Serial.print(tempC);
-  Serial.print(" Temp F: ");
-  Serial.println(DallasTemperature::toFahrenheit(tempC)); // Converts tempC to Fahrenheit
+    // method 2 - faster
+    float tempC = sensors.getTempC(deviceAddress);
+    Serial.print("Temp C: ");
+    Serial.print(tempC);
+    Serial.print(" Temp F: ");
+    Serial.println(DallasTemperature::toFahrenheit(tempC)); // Converts tempC to Fahrenheit
+  }
+
+  void usageDone(unsigned long maxUse, unsigned long maxStand, unsigned long maxSit) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+
+    if (maxUse < minimumTime) {
+      lcd.print("Nothing");
+      digitalWrite(greenLED, LOW);
+    }
+    else if (maxUse <= nr1Time) {
+      lcd.print("Spray: 1 time");
+      nr1Done = true;
+      nr1Timer = millis();
+    }
+    else if (maxUse > nr1Time) {
+      lcd.print("Spray: 2 times");
+      nr2Done = true;
+      nr2Timer = millis();
+    }
+
+
+  }
+
+  void spraying(long currentMillis) {
+    if (sprayButton.read() && currentMillis > 500) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Spraying in");
+      nr1Done = true;
+      nr1Timer = currentMillis;
+      sprayButtonTouched = true;
+      sprayButTimer = currentMillis;
+    }
+
+    if (currentMillis - sprayButTimer > sprayDelay) {
+      sprayButtonTouched = false;
+    }
+    else if (sprayButtonTouched) {
+      lcd.setCursor(0, 0);
+      lcd.print("Spraying in");
+      lcd.setCursor(0, 1);
+      lcd.print("seconds: ");
+      lcd.print("~");
+      lcd.print((sprayDelay  - (currentMillis - sprayButTimer)) / 1000);
+      lcd.print("  ");
+    }
+
+    if (nr1Done && currentMillis - nr1Timer > sprayDelay - ledDelay) {
+      digitalWrite(ledPin, HIGH);
+      nr1Done = false;
+      nr1Light = true;
+    }
+
+    if ((nr1Light && currentMillis - nr1Timer > sprayDelay) || (nr2Light && currentMillis - nr2Timer > sprayDelay)) {
+      digitalWrite(ledPin, LOW);
+      if (nr2Light) {
+        nr1Done = true;
+        nr2Light = false;
+        nr1Timer = currentMillis;
+      }
+      else {
+        nr1Light = false;
+      }
+
+      amountOfSpraysLeft = eepromRead() - 1;
+      eepromWrite(amountOfSpraysLeft);
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Sprays:");
+      lcd.print(amountOfSpraysLeft);
+      digitalWrite(redLED, LOW);
+      digitalWrite(greenLED, LOW);
+
+    }
+
+    if (nr2Done && currentMillis - nr2Timer > sprayDelay - ledDelay) {
+      nr2Light = true;
+      nr2Done = false;
+      digitalWrite(ledPin, HIGH);
+    }
+  
 }
 
-void usageDone(unsigned long maxUse, unsigned long maxStand, unsigned long maxSit){
-  Serial.print("checking usage...");
-  Serial.print("Max Use: ");
-  Serial.print(maxUse);
-  Serial.println();
-  Serial.print("Max Stand: ");
-  Serial.print(maxStand);
-  Serial.println();
-  Serial.print("Max Sit: ");
-  Serial.print(maxSit);  
+void eepromWrite(int value){
+  int nr1 = value / 100;
+  int nr2 = value % 100;
+  EEPROMWriteInt(1, nr1);
+  EEPROMWriteInt(2, nr2);
+}
+
+int eepromRead(){
+  int nr1 = EEPROMReadInt(1);
+  int nr2 = EEPROMReadInt(2);
   lcd.clear();
-  lcd.setCursor(0,0);
-  
-  if (maxUse < minimumTime){
-    Serial.println("Not used");
-    lcd.print("Nothing");
-  }
-  else if (maxUse <= nr1Time){
-    Serial.println("Nr 1 done");
-    Serial.println("Spray once");
-    lcd.print("Spray: 1 time");
-    nr1Done = true;
-    nr1Timer = millis();
-  }
-  else if (maxUse > nr1Time){
-    Serial.println("Nr 2 done");
-    Serial.println("Spray twice");
-    lcd.print("Spray: 2 times");
-    nr2Done = true;
-    nr2Timer = millis();
-  }
-    
-
+  lcd.setCursor(0,1);
+  lcd.print(nr1);
+  Serial.println(nr1);
+  Serial.println(nr2);
+  lcd.print(" ");
+  lcd.print(nr2);
+  return (nr1 + nr2);
 }
+  
+
+void EEPROMWriteInt(int p_address, int p_value)
+     {
+     byte lowByte = ((p_value >> 0) & 0xFF);
+     byte highByte = ((p_value >> 8) & 0xFF);
+
+     EEPROM.write(p_address, lowByte);
+     EEPROM.write(p_address + 1, highByte);
+     }
+
+//This function will read a 2 byte integer from the eeprom at the specified address and address + 1
+unsigned int EEPROMReadInt(int p_address)
+     {
+     byte lowByte = EEPROM.read(p_address);
+     byte highByte = EEPROM.read(p_address + 1);
+
+     return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
+     }
 
 
