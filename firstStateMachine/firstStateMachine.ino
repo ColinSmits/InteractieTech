@@ -44,9 +44,10 @@ unsigned long prevTempTime = 0;
 unsigned long tempDelay = 2000;
 unsigned long triggertime = 10000; // Set time (ms) you need to have no motion to change state
 unsigned long distanceDelay = 250;
-unsigned long usageDelay = 15000;
+unsigned long usageDelay = 5000;
 unsigned long lastUsed = -usageDelay;
 unsigned long ledDelay = 15000;
+unsigned long extraDelay = 2500;
 int minDistance = 25;
 unsigned long sprayTime = 15000;
 unsigned long sprayDelay = 25000;
@@ -89,10 +90,11 @@ unsigned long maxUseTime = 0;
 unsigned long previousDistState = 0;
 unsigned long fleeAttemptTime = 0;
 
-int sitDistance = 10;
-int standDistance = 35;
+int sitDistance = 35;
+int standDistance = 80;
 
 unsigned long nr1Time = 45000;
+
 unsigned long minimumTime = 20000;
 
 //states
@@ -138,6 +140,11 @@ void setup() {
   pinMode(ledPin, OUTPUT); // Use LED indicator (if required)
   pinMode(LDRPin, INPUT);
   pinMode(magnetPin, INPUT);
+  
+  lcd.setCursor(0, 0);
+  lcd.print("Sprays: ");
+  amountOfSpraysLeft = readEEPROM();
+  lcd.print(amountOfSpraysLeft);
 }
 
 void loop() {
@@ -145,7 +152,6 @@ void loop() {
   magnetState = digitalRead(magnetPin);
 
   unsigned long currentMillis = millis();
-
 
   spraying(currentMillis);
 
@@ -261,11 +267,11 @@ void loop() {
           // It responds almost immediately. Let's print out the data
           printTemperature(tempDeviceAddress); // Use a simple function to print out the data
           
-            //lcd.clear();
+            
             float tempC = sensors.getTempC(tempDeviceAddress);
-            //lcd.setCursor(0, 1);
-           // lcd.print("Temp C: ");
-           // lcd.print(tempC);
+            lcd.setCursor(0, 1);
+            lcd.print("Temp C: ");
+            lcd.print(tempC);
           
 
         }
@@ -475,22 +481,26 @@ void checkDistanceState(int dist) {
   }
 
   void usageDone(unsigned long maxUse, unsigned long maxStand, unsigned long maxSit) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
+    //lcd.clear();
+    //lcd.setCursor(0, 0);
 
     if (maxUse < minimumTime) {
-      lcd.print("Nothing");
+      //lcd.print("Nothing");
       digitalWrite(greenLED, LOW);
     }
-    else if (maxUse <= nr1Time) {
-      lcd.print("Spray: 1 time");
+    else if (maxSit <= nr1Time) {
+      //lcd.print("Spray: 1 time");
       nr1Done = true;
       nr1Timer = millis();
+      sprayButtonTouched = true;
+      sprayButTimer = millis();
     }
-    else if (maxUse > nr1Time) {
-      lcd.print("Spray: 2 times");
+    else if (maxSit > nr1Time) {
+      //lcd.print("Spray: 2 times");
       nr2Done = true;
       nr2Timer = millis();
+      sprayButtonTouched = true;
+      sprayButTimer = millis();
     }
 
 
@@ -498,9 +508,9 @@ void checkDistanceState(int dist) {
 
   void spraying(long currentMillis) {
     if (sprayButton.read() && currentMillis > 500) {
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("Spraying in");
+      //lcd.clear();
+      //lcd.setCursor(0, 0);
+      //lcd.print("Spraying in");
       nr1Done = true;
       nr1Timer = currentMillis;
       sprayButtonTouched = true;
@@ -512,7 +522,7 @@ void checkDistanceState(int dist) {
     }
     else if (sprayButtonTouched) {
       lcd.setCursor(0, 0);
-      lcd.print("Spraying in");
+      lcd.print("Spraying in ");
       lcd.setCursor(0, 1);
       lcd.print("seconds: ");
       lcd.print("~");
@@ -526,7 +536,7 @@ void checkDistanceState(int dist) {
       nr1Light = true;
     }
 
-    if ((nr1Light && currentMillis - nr1Timer > sprayDelay) || (nr2Light && currentMillis - nr2Timer > sprayDelay)) {
+    if ((nr1Light && currentMillis - nr1Timer > sprayDelay + extraDelay) || (nr2Light && currentMillis - nr2Timer > sprayDelay + extraDelay)) {
       digitalWrite(ledPin, LOW);
       if (nr2Light) {
         nr1Done = true;
@@ -535,17 +545,18 @@ void checkDistanceState(int dist) {
       }
       else {
         nr1Light = false;
+        digitalWrite(greenLED, LOW);
       }
 
       amountOfSpraysLeft = readEEPROM() - 1;
       writeEEPROM(amountOfSpraysLeft);
 
-      lcd.clear();
+      //lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("Sprays:");
+      lcd.print("Sprays: ");
       lcd.print(amountOfSpraysLeft);
       digitalWrite(redLED, LOW);
-      digitalWrite(greenLED, LOW);
+      
 
     }
 
