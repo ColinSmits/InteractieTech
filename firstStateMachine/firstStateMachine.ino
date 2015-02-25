@@ -188,8 +188,8 @@ void loop() {
         sprayDelay = rb[1];
         EEPROM.write(15, sprayDelay / 1000);
         if (rb[2] == 0) {
-          eepromWrite(2243);
-          eepromRead();          
+          resetEEPROM(2500);//eepromWrite(2243);
+          readEEPROM();          
         }
       }
     }
@@ -537,8 +537,8 @@ void checkDistanceState(int dist) {
         nr1Light = false;
       }
 
-      amountOfSpraysLeft = eepromRead() - 1;
-      eepromWrite(amountOfSpraysLeft);
+      amountOfSpraysLeft = readEEPROM() - 1;
+      writeEEPROM(amountOfSpraysLeft);
 
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -557,43 +557,37 @@ void checkDistanceState(int dist) {
   
 }
 
-void eepromWrite(int value){
-  int nr1 = value / 100;
-  int nr2 = value % 100;
-  EEPROMWriteInt(1, nr1);
-  EEPROMWriteInt(2, nr2);
+
+void writeEEPROM(int value){
+	
+	int i = EEPROM.read(11);
+	int curval = EEPROM.read(i);
+	if (curval == 1){
+		EEPROM.write(11, i-1);
+		writeEEPROM(value);
+	}else{
+		EEPROM.write(i, curval-1);
+	}
 }
 
-int eepromRead(){
-  int nr1 = EEPROMReadInt(1);
-  int nr2 = EEPROMReadInt(2);
-  lcd.clear();
-  lcd.setCursor(0,1);
-  lcd.print(nr1);
-  Serial.println(nr1);
-  Serial.println(nr2);
-  lcd.print(" ");
-  lcd.print(nr2);
-  return (nr1 + nr2);
+void resetEEPROM(int value){
+	
+	for (int n=0; n<10; n++){
+		if (value <= 255){
+			EEPROM.write(n, value);
+		}else{
+			EEPROM.write(n, 255);
+		}
+                value-= 255;
+	}
+	EEPROM.write(11, 9);
 }
-  
 
-void EEPROMWriteInt(int p_address, int p_value)
-     {
-     byte lowByte = ((p_value >> 0) & 0xFF);
-     byte highByte = ((p_value >> 8) & 0xFF);
-
-     EEPROM.write(p_address, lowByte);
-     EEPROM.write(p_address + 1, highByte);
-     }
-
-//This function will read a 2 byte integer from the eeprom at the specified address and address + 1
-unsigned int EEPROMReadInt(int p_address)
-     {
-     byte lowByte = EEPROM.read(p_address);
-     byte highByte = EEPROM.read(p_address + 1);
-
-     return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
-     }
-
-
+int readEEPROM(){
+	int value = 0;
+	int i = EEPROM.read(11);
+        for (int n=0; n<=i; n++){
+          value += EEPROM.read(n);
+        }
+	return value;
+}
