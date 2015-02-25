@@ -16,10 +16,10 @@ DallasTemperature sensors(&oneWire);
 int numberOfDevices; // Number of temperature devices found
 
 DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address
-Button menuButton(17); //A3
-Button choiceButton(18); //A4
-Button sprayButton(19); // A5
-int amountOfSpraysLeft = 1250;
+Button menuButton(15); //A3
+Button choiceButton(16); //A4
+Button sprayButton(17); // A5
+int amountOfSpraysLeft = EEPROM.read(1);
 
 #define echoPin 4// Echo Pin
 #define trigPin 3// Trigger Pin
@@ -142,7 +142,7 @@ void loop() {
  
  
  
- if (sprayButton.read() && currentMillis > decisionTime) {
+ if (sprayButton.read() && currentMillis > (decisionTime + sprayButTimer)) {
    lcd.clear();
    lcd.setCursor(0,0);
    lcd.print("Spraying in");
@@ -185,12 +185,15 @@ void loop() {
      Serial.println("Light 1 off");
    }
    
-   amountOfSpraysLeft -= 1;
+   amountOfSpraysLeft = EEPROM.read(1) - 1;
+   EEPROM.write(1, amountOfSpraysLeft);
+   
    lcd.clear();
    lcd.setCursor(0,0);
    lcd.print("Sprays left:");
    lcd.setCursor(0,1);
    lcd.print(amountOfSpraysLeft);
+   
  }
  
  if (nr2Done && currentMillis - nr2Timer > sprayDelay - ledDelay){
@@ -227,7 +230,7 @@ void loop() {
     }
   }
   
-  if (menuButton.read() && currentMillis > decisionTime){
+  if (menuButton.read()){
     Serial.print("Activated Menu");
     activateMenu();
     menuActivatedCount += 1;
@@ -248,6 +251,7 @@ void loop() {
          menuActive = false;
          sprayDelay = rb[1];
          if (rb[2] == 1){
+           EEPROM.write(1, 1250);
            amountOfSpraysLeft = 1250;
          }
       }        
@@ -282,6 +286,8 @@ void loop() {
      lcd.print("           ");
      lcd.setCursor(0,0);
      lcd.print("Room empty");
+     lcd.setCursor(0,1);
+     lcd.print("Not in Use");
      motionTimer = 0;
    }
  }
