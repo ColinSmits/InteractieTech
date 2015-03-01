@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.17)  24 FEB 2015 19:19
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.17)  1 MAR 2015 18:25
 entering extended mode
 **paper.tex
 (C:\Users\Colin\Desktop\InteractieTech\paper.tex
@@ -15,8 +15,8 @@ an, tamil, telugu, turkish, turkmen, ukenglish, ukrainian, uppersorbian, usengl
 ishmax, welsh, loaded.
 (E:\Programs\MikTex\tex\latex\base\article.cls
 Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
-(E:\Programs\MikTex\tex\latex\base\size11.clo
-File: size11.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+(E:\Programs\MikTex\tex\latex\base\size12.clo
+File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count79
 \c@section=\count80
@@ -250,79 +250,86 @@ LaTeX Font Warning: Font shape `OT1/cmss/bx/it' undefined
 (Font)              using `OT1/cmss/bx/n' instead on input line 14.
 
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 14.
+(Font)              <14.4> on input line 14.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 14.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 14.
+(Font)              <7> on input line 14.
+[1
+
+{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]
 LaTeX Font Info:    Try loading font information for OMS+cmss on input line 33.
 
 LaTeX Font Info:    No file OMScmss.fd. on input line 33.
+
 
 LaTeX Font Warning: Font shape `OMS/cmss/m/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
 (Font)              for symbol `textsection' on input line 33.
 
 
-LaTeX Font Warning: Font shape `OT1/cmss/m/it' in size <10.95> not available
+LaTeX Font Warning: Font shape `OT1/cmss/m/it' in size <12> not available
 (Font)              Font shape `OT1/cmss/m/sl' tried instead on input line 35.
 
-[1
-
-{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
-<schakeling_bb.png, id=62, 815.045pt x 816.651pt>
+[2] [3] <schakeling_bb.png, id=72, 815.045pt x 816.651pt>
 File: schakeling_bb.png Graphic file (type png)
- <use schakeling_bb.png>
-Package pdftex.def Info: schakeling_bb.png used on input line 75.
-(pdftex.def)             Requested size: 407.5215pt x 408.3245pt.
 
-Overfull \hbox (47.5215pt too wide) in paragraph at lines 75--77
+<use schakeling_bb.png>
+Package pdftex.def Info: schakeling_bb.png used on input line 69.
+(pdftex.def)             Requested size: 326.01222pt x 326.6546pt.
+ [4] [5 <C:/Users/Colin/Desktop/InteractieTech/schakeling_bb.png>]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 99.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 99.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 99.
+ [6] [7] <State_Diagram.pdf, id=95, 844.65562pt x 596.98032pt>
+File: State_Diagram.pdf Graphic file (type pdf)
+
+<use State_Diagram.pdf>
+Package pdftex.def Info: State_Diagram.pdf used on input line 115.
+(pdftex.def)             Requested size: 633.49017pt x 447.73413pt.
+
+Overfull \hbox (41.49017pt too wide) in paragraph at lines 115--117
 [][]
  []
 
-[3] [4 <C:/Users/Colin/Desktop/InteractieTech/schakeling_bb.png>]
-<State_Diagram.pdf, id=73, 844.65562pt x 596.98032pt>
-File: State_Diagram.pdf Graphic file (type pdf)
- <use State_Diagram.pdf>
-Package pdftex.def Info: State_Diagram.pdf used on input line 82.
-(pdftex.def)             Requested size: 591.25491pt x 417.88336pt.
 
-
-LaTeX Warning: Float too large for page by 83.61253pt on input line 85.
+LaTeX Warning: Float too large for page by 99.06744pt on input line 118.
 
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[5 <C:/Users/Colin/Desktop/InteractieTech/State_Diagram.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 90.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 90.
+[8 <C:/Users/Colin/Desktop/InteractieTech/State_Diagram.pdf>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 123.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 123.
 
 (C:\Users\Colin\Desktop\InteractieTech\paper.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 90.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 90.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 123.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 123.
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 6DA1689082DA9B1A180184B8C805C74E;565.
+(rerunfilecheck)             Checksum: 2730EC1F2A5F0D5F74527F207484C86D;699.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 90.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 123.
  ) 
 Here is how much of TeX's memory you used:
- 5311 strings out of 493921
- 78845 string characters out of 3150890
- 160614 words of memory out of 3000000
- 8563 multiletter control sequences out of 15000+200000
- 9690 words of font info for 34 fonts, out of 3000000 for 9000
+ 5320 strings out of 493921
+ 78956 string characters out of 3150890
+ 160632 words of memory out of 3000000
+ 8568 multiletter control sequences out of 15000+200000
+ 10050 words of font info for 35 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 29i,6n,28p,779b,347s stack positions out of 5000i,500n,10000p,200000b,50000s
-<E:/Programs/MikTex/fonts/type1/public/amsfonts/cm/cmss10.pfb><E:/Programs/Mi
-kTex/fonts/type1/public/amsfonts/cm/cmss12.pfb><E:/Programs/MikTex/fonts/type1/
-public/amsfonts/cm/cmssbx10.pfb><E:/Programs/MikTex/fonts/type1/public/amsfonts
-/cm/cmssi10.pfb><E:/Programs/MikTex/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on paper.pdf (5 pages, 831258 bytes).
+ 29i,6n,28p,1090b,424s stack positions out of 5000i,500n,10000p,200000b,50000s
+<E:/Programs/MikTex/fonts/type1/public/amsfonts/cm/cmmi12.pfb><E:/Programs/Mi
+kTex/fonts/type1/public/amsfonts/cm/cmr12.pfb><E:/Programs/MikTex/fonts/type1/p
+ublic/amsfonts/cm/cmss12.pfb><E:/Programs/MikTex/fonts/type1/public/amsfonts/cm
+/cmssbx10.pfb><E:/Programs/MikTex/fonts/type1/public/amsfonts/cm/cmssi12.pfb><E
+:/Programs/MikTex/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on paper.pdf (8 pages, 857118 bytes).
 PDF statistics:
- 147 PDF objects out of 1000 (max. 8388607)
- 18 named destinations out of 1000 (max. 500000)
- 91 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 176 PDF objects out of 1000 (max. 8388607)
+ 23 named destinations out of 1000 (max. 500000)
+ 107 words of extra memory for PDF output out of 10000 (max. 10000000)
 
