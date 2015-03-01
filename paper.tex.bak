@@ -105,7 +105,7 @@ Along with the on-board menu, we have a dedicated push button which triggers a s
 
 As to conclude, we look back to how well the project went. We headed off for a strong start, as we had all the components working after only 3 days, so we started building in the first week already. At first, we thought it would work out well at once, and there would be not much of a hassle finishing the project. As time progressed, we actually found that coding for an Arduino involves more skill than just thinking in methods, as you are building upon lots of timers. Moreover, the components of the sensor kit started to work against us, leading to two casualties, as we have stated previously.
 
-Due to the underestimation of the work, we were not able to full incorporate all the sensors into the coded state machine. However, we managed to create a working prototype with the materials we had (as you can see in the short film). All in all, we think we did the best we can and we have encountered what it means to work with hardware instead of only writing code.
+Due to the underestimation of the work, we were not able to fully incorporate all the sensors into the coded state machine. However, we managed to create a working prototype with the materials we had (as you can see in the short film). All in all, we think we did the best we can and we have encountered what it means to work with hardware instead of only writing code.
 
 %state diagram in landscape mode
 
