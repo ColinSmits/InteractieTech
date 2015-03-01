@@ -112,7 +112,7 @@ Due to the underestimation of the work, we were not able to full incorporate all
 \newpage
 \begin{landscape}
 \begin{figure}[h!]
-\includegraphics[scale=0.7]{State_Diagram.pdf}
+\includegraphics[scale=0.75]{State_Diagram.pdf}
 \label{fig:stateDia}
 \caption{State Diagram of our system}
 \end{figure}
