@@ -13,9 +13,9 @@ def skinFilter(frame, lower, upper):
 	ret, tresh1 = cv2.threshold(skin, 0,255,cv2.THRESH_BINARY)
 	cv2.imshow("binary", tresh1)
 
-	center = findDefects(frame, tresh1)
+	centers = findDefects(frame, tresh1)
 	
-	return [frame, center]
+	return [frame, centers]
 
 
 def findDefects(frame, gray):
@@ -26,6 +26,8 @@ def findDefects(frame, gray):
 	n = 0
 	cx = None
 	cy = None
+	ci = []
+	centers = []
 	if len(contours) > 1:
 		for i in range(len(contours)):
 			cnt = contours[n]
@@ -35,19 +37,18 @@ def findDefects(frame, gray):
 			area = cv2.contourArea(cnt)
 			print area
 			print "\n"
-			if area > maxArea:
-				maxArea = area
-				ci = n
+			if area > 10000:
+				ci.append(i)
 
 			n += 1
 		
 		#print str(contours)
-		cnt = contours[ci]
-		
-		if maxArea > 10000:
+		for i in ci:
+			cnt = contours[i]
 			M = cv2.moments(cnt)
 			cx = int(M['m10']/M['m00'])
 			cy = int(M['m01']/M['m00'])
+			centers.append((cx, cy))
 			#print len(contours)
 			#print ci
 			#print str(cnt)
@@ -67,11 +68,11 @@ def findDefects(frame, gray):
 				cv2.line(frame,start,end,[0,255,0],2)
 				cv2.circle(frame,far,5,[0,0,255],-1)
 
-	return (cx, cy)
+	return centers
 			
 
 def processHand(center, prev_center, prev_Offset):
-	
+
 
 	difference_X = center[0] - prev_center[0]
 	difference_y = center[1] - prev_center[1]
@@ -92,3 +93,24 @@ def getLengthX(vector):
 
 def getLengthY(vector):
 	return vector[1]
+
+
+def getPreviousCenter(center, previous_centers):
+	i = 0
+	maxDistance = 10000000
+	
+	for prev_center in previous_centers:
+
+		difference_X = center[0] - prev_center[0]
+		difference_Y = center[1] - prev_center[1]
+
+		totalDifference = abs(difference_X)
+
+		if totalDifference < maxDistance:
+			maxDistance = totalDifference
+			current = i
+
+		i += 1
+
+	return current	
+

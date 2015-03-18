@@ -28,11 +28,17 @@ while (True):
         break
 
 lastFrame = 0
+lastFrame2 = 0
 lastFound = 0
 findDelay = 20
 maxDelay = 20
+oneHand = False
+twoHands = False
+trigger = 300
+_2HandsFound = False
+lastFound2 = 0
 
-trigger = 400
+trigger2Hands = 200
 
 #cam started, process frames
 while(cap.isOpened):
@@ -43,6 +49,14 @@ while(cap.isOpened):
         if lastFound < findDelay:
             lastFound += 1
 
+        if lastFound2 < findDelay:
+            lastFound2 += 1
+
+        if lastFrame2 < findDelay:
+            lastFrame2 += 1
+        else:
+            twoHands = False
+
         img = frame.copy()
        # back = fgbg.apply(img)
        # img = cv2.bitwise_and(img, img, mask=back)
@@ -51,13 +65,16 @@ while(cap.isOpened):
        # img = cv2.dilate(img, kernel, iterations = 2)
         listImg = functions.skinFilter(img, lower, upper)
         img = listImg[0]
-        center = listImg[1]
+        centers = listImg[1]
         cv2.imshow("images", img)
 
-        if (center[0] != None):
+        
+        if len(centers) == 1 and not twoHands:
+            print len(centers)
+            print centers
             if (handFound == True):
-                prev_Offset = functions.processHand(center, prev_center, prev_Offset)
-                
+                prev_Offset = functions.processHand(centers[0], prev_centers[0], prev_Offset)
+                prev_centers = centers
                 length = functions.getLengthX(prev_Offset)
                 if abs(length) > trigger:
                     print length
@@ -75,15 +92,97 @@ while(cap.isOpened):
             elif lastFound >= findDelay:
                 handFound = True
                 prev_Offset = (0,0)
-                prev_center = center
+                prev_centers = centers
 
             lastFrame = 0
+            oneHand = True
+
+
+
+        elif len(centers) == 2:
+            twoHands = True
+            related = []
+            lengths = dict()
+            if (_2HandsFound == True):
+                for center in centers:
+                    print len(prev_centers)
+                    related.append(functions.getPreviousCenter(center, prev_centers))
+                    print related
+
+                if related[0] == related[1]:
+                    print "Kan niet"
+
+                if related[0] == 1:
+                    centers.reverse()
+
+                print centers
+                for i in range(len(centers)):
+                    print related[i]
+                    print len(centers)
+                    prev_Offsets[i] = functions.processHand(centers[i], prev_centers[related[i]], prev_Offsets[i])
+                    lengths[i] = functions.getLengthY(prev_Offsets[i])
+
+                    print prev_Offsets
+
+                
+                if abs(lengths[0]) > trigger2Hands and abs(lengths[1]) > trigger2Hands:
+                    print lengths
+
+                    # check which is left and which is right
+                    if centers[0][0] < centers[1][0]:
+
+                        if lengths[0] < 0 and lengths[1] > 0:
+                            wsh.AppActivate("Photo Gallery")
+                            wsh.sendKeys("^.")
+                            _2HandsFound = False
+                            lastFound2 = 0
+
+                        elif lengths[1] < 0 and lengths[0] > 0:
+                            wsh.AppActivate("Photo Gallery")
+                            wsh.sendKeys("^,")
+                            _2HandsFound = False
+                            lastFound2 = 0
+
+                    elif centers[1][0] < centers[0][0]:
+
+                        if lengths[0] < 0 and lengths[1] > 0:
+                            wsh.AppActivate("Photo Gallery")
+                            wsh.sendKeys("^,")
+                            _2HandsFound = False
+                            lastFound2 = 0
+
+                        elif lengths[1] < 0 and lengths[0] > 0:
+                            wsh.AppActivate("Photo Gallery")
+                            wsh.sendKeys("^.")
+                            _2HandsFound = False
+                            lastFound2 = 0
+
+                prev_centers = centers
+
+
+            elif lastFound2 >= findDelay:
+                _2HandsFound = True
+                prev_Offsets = [(0,0), (0,0)]
+                prev_centers = centers
+
+            lastFrame2 = 0
+
+
+
+
+
+
+
+
+
 
         else:
             lastFrame += 1
 
             if lastFrame > maxDelay:
-                handFound == True
+                handFound == False
+                lastFrame = 0
+
 
 
 
