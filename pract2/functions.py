@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def skinFilter(frame, lower, upper):
-	converted = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+	converted = cv2.cvtColor(frame, cv2.COLOR_BGR2YCR_CB)
 	skinMask = cv2.inRange(converted, lower, upper)
 	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
 	skinMask = cv2.erode(skinMask, kernel, iterations = 2)
@@ -31,40 +31,27 @@ def findDefects(frame, gray):
 	if len(contours) > 1:
 		for i in range(len(contours)):
 			cnt = contours[n]
-			#if cv2.isContourConvex(cnt):
-			print "True"
-			print "\n"
 			area = cv2.contourArea(cnt)
-			print area
-			print "\n"
+					
 			if area > 10000:
 				ci.append(i)
 
 			n += 1
 		
-		#print str(contours)
 		for i in ci:
 			cnt = contours[i]
 			M = cv2.moments(cnt)
 			cx = int(M['m10']/M['m00'])
 			cy = int(M['m01']/M['m00'])
 			centers.append((cx, cy))
-			#print len(contours)
-			#print ci
-			#print str(cnt)
 			hull = cv2.convexHull(cnt,returnPoints = False)
-			#print str(hull)
 			defects = cv2.convexityDefects(cnt,hull)
-			#print str(defects)
 
 			for i in range(defects.shape[0]):
 				s,e,f,d = defects[i,0]
 				start = tuple(cnt[s][0])
 				end = tuple(cnt[e][0])
 				far = tuple(cnt[f][0])
-				#print start
-				#print end
-				#print far
 				cv2.line(frame,start,end,[0,255,0],2)
 				cv2.circle(frame,far,5,[0,0,255],-1)
 
@@ -98,7 +85,8 @@ def getLengthY(vector):
 def getPreviousCenter(center, previous_centers):
 	i = 0
 	maxDistance = 10000000
-	
+	print "Previous: %s" % (previous_centers)
+	print "Current: %s" % (str(center))
 	for prev_center in previous_centers:
 
 		difference_X = center[0] - prev_center[0]
@@ -111,6 +99,8 @@ def getPreviousCenter(center, previous_centers):
 			current = i
 
 		i += 1
+
+	print "Related to center %s: %s = %s" % (str(center), current, previous_centers[current])
 
 	return current	
 

@@ -15,8 +15,8 @@ fgbg = cv2.BackgroundSubtractorMOG()
 
 #frame = cv2.imread("test2OtherLighting.jpg")
 #skin filter boundaries (tweak if necessary)
-lower = np.array([0, 45, 80], dtype = "uint8")
-upper = np.array([15, 255, 255], dtype = "uint8")
+lower = np.array([0, 144, 77], dtype = "uint8")
+upper = np.array([255, 173, 127], dtype = "uint8")
 handFound = False
 
 
@@ -30,11 +30,11 @@ while (True):
 lastFrame = 0
 lastFrame2 = 0
 lastFound = 0
-findDelay = 20
+findDelay = 30
 maxDelay = 20
 oneHand = False
 twoHands = False
-trigger = 300
+trigger = 250
 _2HandsFound = False
 lastFound2 = 0
 
@@ -56,28 +56,35 @@ while(cap.isOpened):
             lastFrame2 += 1
         else:
             twoHands = False
+            _2HandsFound = False
 
         img = frame.copy()
-       # back = fgbg.apply(img)
-       # img = cv2.bitwise_and(img, img, mask=back)
-       # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-       # img = cv2.erode(img, kernel, iterations = 2)
-       # img = cv2.dilate(img, kernel, iterations = 2)
+        """
+        back = fgbg.apply(img)
+        img = cv2.bitwise_and(img, img, mask=back)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        img = cv2.erode(img, kernel, iterations = 2)
+        img = cv2.dilate(img, kernel, iterations = 2)
+        """
         listImg = functions.skinFilter(img, lower, upper)
         img = listImg[0]
         centers = listImg[1]
-        cv2.imshow("images", img)
+        
+        
+       
+        cv2.imshow("img", img)
+        
 
         
+    
         if len(centers) == 1 and not twoHands:
-            print len(centers)
-            print centers
+            
             if (handFound == True):
                 prev_Offset = functions.processHand(centers[0], prev_centers[0], prev_Offset)
                 prev_centers = centers
                 length = functions.getLengthX(prev_Offset)
                 if abs(length) > trigger:
-                    print length
+                    #print length
                     if length < 0:
                         wsh.AppActivate("Photo Gallery") # select another application
                         wsh.sendKeys("{Left}")
@@ -100,14 +107,15 @@ while(cap.isOpened):
 
 
         elif len(centers) == 2:
+            
             twoHands = True
             related = []
             lengths = dict()
             if (_2HandsFound == True):
                 for center in centers:
-                    print len(prev_centers)
+                    #print len(prev_centers)
                     related.append(functions.getPreviousCenter(center, prev_centers))
-                    print related
+                    #print related
 
                 if related[0] == related[1]:
                     print "Kan niet"
@@ -115,18 +123,18 @@ while(cap.isOpened):
                 if related[0] == 1:
                     centers.reverse()
 
-                print centers
+                #print centers
                 for i in range(len(centers)):
                     print related[i]
                     print len(centers)
                     prev_Offsets[i] = functions.processHand(centers[i], prev_centers[related[i]], prev_Offsets[i])
                     lengths[i] = functions.getLengthY(prev_Offsets[i])
 
-                    print prev_Offsets
+                
 
                 
                 if abs(lengths[0]) > trigger2Hands and abs(lengths[1]) > trigger2Hands:
-                    print lengths
+                    #print lengths
 
                     # check which is left and which is right
                     if centers[0][0] < centers[1][0]:
@@ -188,7 +196,7 @@ while(cap.isOpened):
 
 
 
-#"""      
+    
     k = cv2.waitKey(30) & 0xff
     if k == 27:
        break
