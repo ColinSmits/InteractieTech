@@ -4,6 +4,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{hyperref}
 \author{Bastiaan Weijers \\ 3256669 \and Colin Smits \\4075390}
 \title{Body Photo Browser}
 \renewcommand*{\familydefault}{\sfdefault}
@@ -12,7 +13,7 @@
 
 
 \section{Introduction}
-Currently, virtual reality is starting to grow in the digital world, which makes it possible for a user to move in a virtual world using motion, which is then detected by sensors. This paper will discuss an implementation of processing hand gestures in order to operate a photo browser system (Windows Photo Gallery\footnote{http://windows.microsoft.com/nl-nl/windows-live/photo-gallery}). First, we will discuss the techniques used in order to create a working system, and after that the requirements needed for the system to work will be explained.
+Currently, virtual reality is starting to grow in the digital world, which makes it possible for a user to move in a virtual world using motion, which is then detected by sensors. This paper will discuss an implementation of processing hand gestures in order to operate a photo browser system (Windows Photo Gallery\footnote{http://windows.microsoft.com/nl-nl/windows-live/photo-gallery}). First, we will discuss the techniques used in order to create a working system, and after that the requirements needed for the system to work will be explained. In addition to this paper, please refer to the film \footnote{\url{http://youtu.be/ye8yR4tcteo}}.
 
 \section{Processing Steps}
 For building our system, we used Python as programming language, due to it's ease of use with matrix calculations. The testing was done using a 1.5MP integrated web cam. Our system is based on detecting the hands using color filters, and getting the center of the hands which can then be tracked. The following gestures can be recognised:
@@ -27,6 +28,7 @@ For building our system, we used Python as programming language, due to it's eas
 Firstly, we process the frame by converting it from BGR (channels switched)into a YCrCb color coded file. Then, we apply the cv.inRange() function in order to filter the pixels that are in the color range. Then, we use 2 iterations of erosion and dilation, and a Gaussian blur, after which we compare the original image to the \emph{mask}. This generates a better qualitative comparison, as well as bigger area, so that contours can be detected more easily (explained further on). The pixels which are contained in both files will be included in the further processed file.\\
 \indent Secondly, we try to detect hands in the picture. For that we use contours by using the OpenCV operation findContours(), after which we filter contours with an area too small, as these may bbe noise inducted contours. We then find the center of each large enough contour by applying cv.moments(). Using these centers, we can track the hands and recognise gestures by comparing the center's location per frame.
 \section{Assumptions \& Requirements}
+\label{Ass}
 In order for our system to work we have to set the following requirements:
 
 \begin{itemize}
@@ -38,5 +40,7 @@ In order for our system to work we have to set the following requirements:
 \end{itemize}
 
 \section{Result}
+In the beginning, we struggled with implementing our idea, because it was difficult to detect skin color the way we wanted to (in HSV color space). However, when we started using YCbCr as color space, it worked wuite well, and we could continue. At last, we think that our product is overall robust (low amount of false positives) in a controlled environment (see Section \ref{Ass}). 
+
 
 \end{document}

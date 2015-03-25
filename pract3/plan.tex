@@ -1,0 +1,23 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\author{Bastiaan Weijers \\ b.weijers@students.uu.nl \\ 3256669 \and Colin Smits \\ c.smits@uu.nl \\4075390}
+\date{}
+\title{\textbf{Plans for Assignment 3}}
+\begin{document}
+\maketitle
+\section{Introduction}
+The system we created is used to identify gestures in order to control a photo browser. The following gestures are defined as controls: swiping left and right will give the previous photo and next photo respectively. Right hand up, left hand down will rotate counter clockwise, and vice versa.
+
+\section{System Evaluation}
+In order to test the robustness, we will look at how many times the system correctly handles a gesture. For that, we can create a confusion matrix to compare the system's accuracy to what we defined to be true. We can specify the "ground truth" for this by using the definitions of the gestures given above. After that, we can measure the precision and recall. We think precision is most important, as we do not want false positives, during which our system will detect something when nothing occurred. We then want the average precision, so we will be using a PR-curve. In order to do this test correctly, we shall have to incorporate the notion ecological validity. Our setting thus will not be a laboratory, but a normal room with the same lighting during every test, and a background that is suitable for our system and does not change either.
+
+
+\section{User Evaluation}
+In order to get an idea of what the user thinks of our system, we can perform a certain amount of tests. As A/B testing and eye tracking cannot be performed since we only have one variation of the system and eye tracking is not important in this setting, we shall have to limit our evaluation to a usability interview. In this interview, we can start with putting the user in front of the system, and start asking what actions they would perform in order to use the system, and why. After that, we can introduce them the correct gestures, and ask what they think of that, and what they would change. 
+
+
+\end{document}

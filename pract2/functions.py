@@ -52,7 +52,7 @@ def findDefects(frame, gray):
 			cnt = contours[n]
 			area = cv2.contourArea(cnt)
 					
-			if area > 10000:
+			if area > 4000:
 				ci.append(i)
 
 			n += 1
@@ -116,8 +116,8 @@ def getLengthY(vector):
 def getPreviousCenter(center, previous_centers):
 	i = 0
 	maxDistance = 10000000
-	print "Previous: %s" % (previous_centers)
-	print "Current: %s" % (str(center))
+	#print "Previous: %s" % (previous_centers)
+	#print "Current: %s" % (str(center))
 	for prev_center in previous_centers:
 
 		difference_X = center[0] - prev_center[0]
@@ -131,7 +131,7 @@ def getPreviousCenter(center, previous_centers):
 
 		i += 1
 
-	print "Related to center %s: %s = %s" % (str(center), current, previous_centers[current])
+	#print "Related to center %s: %s = %s" % (str(center), current, previous_centers[current])
 
 	return current	
 
