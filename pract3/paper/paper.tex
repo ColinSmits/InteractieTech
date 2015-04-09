@@ -9,21 +9,49 @@
 \usepackage{rotating}
 \usetikzlibrary{positioning}
 \author{Bastiaan Weijers \\ 3256669 \and Colin Smits \\ 4075390}
-\title{Evaluation of a Body Photo Browser}
+\title{Evaluation of a Body Photo Browser\footnote{Word Count:2957}}
+\renewcommand{\familydefault}{\sfdefault}
 \begin{document}
 \maketitle
-\abstract{Here comes the abstract}\\
-\textbf{keywords:}
+\abstract{A computer vision systems recognising gestures in order to operate a photo browser is reviewed. The system evaluation focuses mainly on the accuracy of the system. We see that some gestures are confused, limiting the system's overall performance. The user evaluation is carried out by usability questionnaires. An overall evaluation is given using the PSSUQ, which shows that the system does not meet the standards set for a computer vision system. Parts of the system are evaluated using ASQ and SEQ, which show difference between tasks within the system. Linking both, we see that the way the system is running short of recognising gestures influences the user's perception of the system. }
+
+\vspace{1cm}
+
+\noindent \textbf{Keywords:} Computer vision, gesture recognition, system evaluation, user evaluation
  
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+
 \section{Introduction}
+The ease of using systems has become more important through the years. In order to check the usefulness, we need to evaluate the system. In this paper, we will discuss the usability of a body photo browser system, as will be defined later this section. The need for this is quite clear: the system is built for a user who wants a fluent experience, as well as a clear view of how to use the system. Taking this into consideration, we will discuss the system both from a system's perspective and the user's perspective.
+
+The purpose of this evaluation is mainly to identify pitfalls in the system's accuracy, as well as recognising limiting factors for a satisfying user experience. We want to know what adaptations must be made to the current system in order to create an overall better performing system in terms over ease, satisfaction and accuracy.
+
+In section 2, the system's reliability concerning robustness and accuracy will be discussed. After that, the usability of the system regarding ease of use and intuitiveness will be discussed in section 3. Last but not least, a conclusion will be drawn based upon the evaluations in sections 2 and 3.
+
+%INCLUDE research goals in introduction
+
+\subsection{The system}
+\label{sub:system}
+The system is a body photo browser. Using the system, one is able to scroll through and rotate pictures in the Windows Photo Gallery software %insert source.
+The following gestures are recognised by the system:
+
+\begin{description}
+\item[Swipe Left:] Using one hand (in view), going from right to left in the view. This will give the previous photo.
+\item[Swipe Right:] Using one hand (in view), going from left to right in the view. This will give the next photo.
+\item[Rotate left:] Using two hands (in view), going up with the right hand, and simultaneously going down with the left hand. This mimics the idea of rotating a picture counter clockwise.
+\item[Rotate Right:] Using two hands (in view), going up with the left hand, and simultaneously going down with the right hand. This quite mimics the idea of rotating a picture clockwise.
+\end{description}
+
+The system works by recognising skin colour, then tracking the hands blobs through the screen, and depending on the total offset measured, a gesture might or might not be recognised and handled. 
+
 \section{System Evaluation}
-In this chapter we will discuss how the system evaluation was performed and what the results were of this evaluation. 
+In this chapter we will discuss how the system evaluation was performed and what the results were of this evaluation.
+ 
 \subsection{Methods and Environment}
 To quantify the performance of the Body Motion program, we setup a test environment to measure how well the system can translate user interaction to concrete system actions. The test setup is contained in an ecologically sound environment, in this case a bedroom with closed curtains was used with as a primary light source three led bulbs lighting the room. There was a single participant used to create quantifying data, whereas the particular user was well introduced to the workings, capabilities and limitations of the system. An analysis of how the system performs when used by lesser informed participants can be found later on in Section 3 - User Evaluation.
 \\ The software was used with a YCrCb spectrum at [..   ...] and a minimum delay of $70ms$ between actions, further settings were left at program-default.
 \\ For each action performed in the video recording, a chart was updated with the value the system interpreted it to be. Possible predicted and actual actions were: Next, Previous, CW rotation, CCW rotation and Nothing. Whereas "Nothing" is represented as an idle action wherein nothing happens. It is worth noting that this particular action can only be actively observed on the actual outputs of the system, as predicting idle actions is not possible in our system.
-\subsection{results}
+\subsection{Results}
 To achieve accurate and representing results, we have recorded a total of 159 actions that we will measure its interpretation by system off, this accounts to roughly 40 actions per possible move.  The number was picked as such because a $n > 30$ will give us a normal distribution over our data [ref needed]. All actions are recorded in a total of two video's, this allows the system to run in a continuous mode, without having to reinitialize after every action. This continuous mode should yield results that are more ecologically sound as opposed to having system global variables reinitialized with every action.
 \\ The evaluated output of a the actions will be tested against their expected outputs, the result of this can be found in Table~\ref{table:systemeval}. The data from the table shows the Predicted actions against the Actual actions delivered by the system for every possible action. From the table one can read how many predictions actually translated to correct behavior of the system, and how many did something unexpected.
 \\ Table~\ref{table:systemeval} can be parsed to a so-called Confusion Matrix, which is depicted in Table~\ref{table:confusionmatrix}. This matrix is a further generalization and will help us in the question on how well our system performs. Stated before (????, dit is wel in de presentatie gezegd maar nemen we 't op in de paper?), a preferred bias exists in having low false positives as this might be experienced by end-users as undesired behavior. From looking at the Confusion matrix we strongly suspect that we have satisfied this condition, but to confirm this we need to look at the Precision and Recall and establish a PR-curve.
@@ -98,15 +126,162 @@ box/.style={draw,rectangle,minimum size=2cm,text width=1.5cm,align=left}]
 Hier discussie over de resultaten. Hoewel de resultaten nog ontbreken, weten we waarschijnlijk al wel waar de resultation heengaan. Overall scores zullen 'mediocre' zijn at-best. Tenzij we de hypotheses opsplitsen en apart kijken naar swipe-left/right en rotatie. Dan kunnen we misschien iets zeggen over het verschil daarin. We kunnen dan ook "recommendations" maken.
 
 
-
-
-
-
-
-
 \section{User Evaluation}
+Now that we have had a look from a system point-of-view, we will now evaluate the system from a user perspective. First, the used methodology will be discussed. After that, the results and discussion will follow.
+
+\subsection{Methods and Environment}
+\label{sub:userMeth}
+In our user evaluation, we want to see whether our system is intuitive and easy to use. In order to do that, we need to have a number of people testing our system. First of all, we need to define the environment in which we will be testing. Using the notion of ecological validity, which states that the surroundings in which the research takes place must resemble a real-world setting, the tests will take place in normal rooms in terms of for example lighting and background. A laboratory would not be suitable as the user will react differently. The tests are then carried out as follows. 
+
+%Brewer, M. (2000). Research Design and Issues of Validity. In Reis, H. and Judd, C. (eds) Handbook of Research Methods in Social and Personality Psychology. Cambridge:Cambridge University Press.)
+
+First of all, we ask the user to take a look at the system. We have defined four different gestures, and for each of the different options, we ask the user what would be his first opinion on how to perform the task. The user will give his own gesture which he would use in order to perform the action. That way, we can compare the thoughts of users to our own throughts on the used gestures. After that, we set up 10 scenarios, as shown in Table \ref{tab:scen}. The first four scenarios contain each of the different gestures in order to make the user comfortable with the system. After that, we start combining the gestures so that the user should be thinking about what gestures he must use in which order. Finally, we do not specify the gestures any more, but we describe the task by specifying pictures the user must recognise. In this way, we can test whether the user can perform the right actions while still thinking of what to do. The last part mainly shows how intuitive and easy our system can be used, as the user will be distracted from the gestures. 
+
+\begin{table}
+\begin{center}
+\begin{tabular}{r|l}
+\textbf{Scenario} & \textbf{Task} \\
+\hline
+1 & Navigate to the next photo \\ 
+2 & Navigate to the previous photo \\
+3 & Rotate the photo clockwise \\
+4 & Rotate the photo counter-clockwise \\
+5 & Navigate to the second next photo (twice to the next)\\ 
+6 & Rotate the previous photo clockwise \\
+7 & Rotate the photo and put it back up \\
+8 & Navigate to the photo containing [something] \\
+9 & Put the current (rotated) photo back up \\
+10 & Navigate to the rotated photo and put it back up \\
+\end{tabular}
+\end{center}
+\caption{\textit{Specified scenarios in the user tests}}
+\label{tab:scen}
+\end{table}
+
+
+
+Secondly, in order to get measurements, we set up a questionnaire. According to Sauro and Lewis \cite{Quantify}, and Tullis and Albert \cite{Measure}, there are different standardized questionnaires. For our system, we want to know whether the user is satisfied with the system as a whole. As defined by Sauro and Lewis, the PSSUQ (Post-study System Usability Questionnaire) is "designed to access users' perceived satisfaction with computer system applications" \cite{Quantify}. Looking at our goal, we think this questionnaire fits our research. Therefore, we incorporated this questionnaire at the end of the test, after all the scenarios have been completed. We chose the PSSUQ over the SUS (System Usablity Scale), which can also be used as a measure of the usability of a system, due to an increased reliability \cite{Quantify}.
+
+In addition, we thought that the user should be able to tell us what he perceived during each scenario. For that, we set up a combination of the ASQ (After Scenario Questionnaire) and the SEQ (Single Ease Question). The AQS was developed by Lewis in order to describe the user's satisfaction with completing a certain task \cite{Quantify}\cite{ASQ}. This can be perfectly used for our research goal. Moreover, the ASQ is linked to the PSSUQ, and also describes the user's satisfaction with a system, in this case a certain task. Furthermore, as the name suggests, the SEQ is used to describe a user's view on the ease of completing a task. The combination is used to get more reliable results.
+
+\subsection{Results}
+To start off, we look at the user's thoughts on the gestures to be used. In Table \ref{tab:compGes}, we show the percentage of user's defining a certain gesture for an action. We can see that for the navigation actions, the users differ in view, whereas for rotations, all the user say the same.
+\renewcommand{\arraystretch}{1.5}
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{l || l | c}
+\textbf{Action} & \textbf{ Users opinions} & \% \\
+\hline
+\multirow{2}{*}{Next photo} & Hand left to right & 75\\
+ & \textbf{Hand right to left }& \textbf{25} \\
+\hline
+\multirow{2}{*}{Previous photo} & \textbf{Hand left to right} & \textbf{25}\\
+& Hand right to left & 75\\
+\hline
+\multirow{2}{*}{Rotate left} & Rotate hands in circle counter-clockwise & 100 \\
+& \textbf{Left hand down, right hand up} & \textbf{0} \\
+\hline
+\multirow{2}{*}{Rotate Right} & Rotate hands in circle clockwise & 100 \\
+& \textbf{Left hand up, right hand down} & \textbf{0}
+\end{tabular}
+\end{center}
+\caption{\textit{Comparison of the implemented gestures (in \textbf{bold}) with the user's opinions on the gestures to be used. $ n = 4$}}
+\label{tab:compGes}
+\end{table}
+
+
+After that, we need to examine the results from the questionnaires. We will start by analysing the scenario questionnaires, the SEQ and ASQ.
+Firstly, the SEQ results are shown in Table \ref{tab:seq}. On first glance, we can see that for the scenarios containing only navigating to photos, the overall score is low ( $<$ 3), as opposed to those only containing rotations ( $>$4). Furthermore, the more complicated tasks show a broad confidence interval, meaning that there is much variation between users as far as ease of use is concerned. \\
+
+\textit{[ASQ results will follow in the final paper]\\}
+
+
+
+\renewcommand{\arraystretch}{1.0}
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{c  l || c || c | c}
+\textbf{Scenario} & \textbf{Description} & 
+\textbf{Lower} &
+\textbf{Mean} &
+\textbf{Upper} \\
+\hline
+1 & Navigate to the next photo & 0.58 & 1.5 & 2.42 \\
+2 & Navigate to the previous photo & 0.58 & 1.5 & 2.42 \\
+3 & Rotate the photo clockwise & 2.45 & 4.5 & 6.56 \\
+4 & Rotate the photo counter-clockwise  & 2.45 & 4.5 & 6.56 \\
+5 & Navigate to the second next photo & 0.73 & 2.25 & 3.77 \\
+6 & Rotate the previous photo clockwise & 0.40 & 3.0 & 5.60 \\
+7 & Rotate the photo and put it back up & 1.25 & 3.25 & 5.25\\
+8 & Navigate to the photo containing [something]& 1.25 & 3.25 & 5.25\\
+9 & Put the current (rotated) photo back up  & 0.10 & 3.0 & 5.90\\
+10 & Navigate to the rotated photo and put it back up & 0.70 & 2.0 & 3.30\\
+\end{tabular}
+\end{center}
+\caption{\textit{Results of the SEQ, showing the mean and 95\% confidence intervals for each of the scenarios. $n=4$}}
+\label{tab:seq}
+\end{table}
+
+Now we need to study the user's satisfaction overall. In Table \ref{tab:pssuq}, the results from the PSSUQ questionnaire are shown. 
+
+\begin{table}[t!]
+\begin{center}
+\begin{tabular}{c || c || c | c}
+\textbf{Question} &
+\textbf{Lower} &
+\textbf{Mean} &
+\textbf{Upper} \\
+\hline
+1  & 1.95 & 2.75 & 3.55 \\
+2 & 1.23 & 2.75 & 4.27 \\
+3 & 1.95 & 2.75 & 3.55\\
+4  & 0.75 & 3 & 5.25 \\
+5 & 1.23 & 2.75 & 4.27 \\
+6 & 1.73 & 3.25 & 4.77 \\
+7 & 3.36 & 5.75 & 8.14\\
+8 & 2.70 & 4 & 5.30\\
+9  & 1.74 & 4.5 & 7.26\\
+10 & 2.75 & 5 & 7.25\\
+11 & 2.36 & 4.75 & 7.14 \\
+12 & 2.75 & 5 & 7.25\\
+13 & 0.75 & 3 & 5.25\\
+14 & 2.46 & 3.25 & 4.05\\
+15 & 2.58 & 3.5 & 4.42\\
+16 & 1.73 & 3.25 & 4.77 \\
+\hline 
+\hline
+Avg. 1-6 & 1.47 & 2.88 & 4.28 \\
+Avg. 7-12 & 2.61 & 4.83 & 7.05 \\
+Avg. 13-15  & 1.92 & 3.25  & 4.57 \\
+Avg. 1-16  & 2.00 & 3.70 &  5.40 \\
+\end{tabular} 
+\caption{PSSUQ results showing the mean for each question compared to the 95\% confidence intervals. $n=4$}
+\label{tab:pssuq}
+\end{center}
+\end{table}
+
+\subsection{Discussion}
+From the results obtained for the user's opinion on the gestures, we can conclude that the navigation is something that matters from person to person. The intention of the implemented gesture was to simulate a swipe on, for example, a tablet. To go to the next photo, one must then swipe from right to left, seemingly pushing the photo roll to the left. However, users perceive that it could also be seen as the direction to where one wants to go. In this case, the meaning of a swipe to the left is that the photo to the left should be shown, thus the previous. This is something that has to be worked out further. 
+Another striking observation is that users all have the same opinion on rotation. However, this differs from our own implementation. Looking closely to the implementation, however, we see that the gesture implemented resembles a rotating movement without circulation. The circular limitation still hinders smooth use of the system, as can also be seen in the SEQ.
+
+The SEQ shows us that the system's easy lies in the navigation, and that the rotation is more difficult. As stated before, the cause of this might be the implementation of the gestures as is. The navigation issue is resolved due to the fact that the right gestures are explained after the first questions (Section \ref{sub:userMeth}.
+
+From the PSSUQ, we can conclude that the system's performance is not good enough, when compared to the PSSUQ norms \cite{Quantify}. 
+
+Overall, for the user evaluation, we can generally say that when only navigation is incorporated, the user is able to do tasks with ease. On the contrary, when rotation is included, the user will start to struggle. Nonetheless, we still have to be careful concluding from our result set, as the sample size is much too low ($n=4$) in order to get a clear representation.  
+
 \section{Discussion}
+All in all, when we link the system evaluation to the user evaluation, we can see one striking property already. Due to problems with the implementation of the rotating gestures, the system performs poor and the user cannot use the system according to plan. 
+
+In the system evaluation, we have seen that rotating gestures are easily confused with the other rotation, and that the system sometimes does not recognise any gesture at all when rotating. In the user evaluation, we have seen these properties return in the SEQ, where scenarios involving rotation were seen less satisfactory to the user.
+This implies that for further research, the system's implementation of rotation must be reviewed and edited, in order to get a more accurate and more satisfying system.
+
+
 
 \thebibliography{99}
+\bibitem{Quantify} J. Sauro, J. R. Lewis: \textit{"Quantifying the User Experience"}, Elsevier, 2012
+\bibitem{Measure} T. Tullis, W. Albert: \textit{"Measuring the User Experience: Collecting, Analyzing, and Presenting Usability Metrics" (2nd Edition)}, Elsevier, 2013 
+\bibitem{ASQ} J. R. Lewis: \textit{"IBM computer usablity satisfaction questionnaires: Psychometric evaluation and instructions for use"}, International Journal for Human Computer Interactions, 7 (1995), 57-78
+\bibitem{EcoVal} M. Brewer: \textit{"Research Design and Issues of Validity"}. In: H. Reis, C. Judd (eds), \textit{"Handbook of Research Methods in Social and Personality Psychology"}, Cambridge University Press, 2000
 
 \end{document}
