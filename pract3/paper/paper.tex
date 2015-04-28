@@ -10,12 +10,12 @@
 \usepackage{cite}
 \usetikzlibrary{positioning}
 
-\author{Bastiaan Weijers \\ 3256669 \and Colin Smits \\ 4075390}
-\title{Evaluation of a Body Photo Browser\footnote{Word Count:2957}}
+\author{Bastiaan Weijers \\ B.Weijers@students.uu.nl \\ 3256669 \and Colin Smits \\ C.Smits@uu.nl \\ 4075390}
+\title{Evaluation of a Body Photo Browser\footnote{Word Count:3698}}
 \renewcommand{\familydefault}{\sfdefault}
 \begin{document}
 \maketitle
-\abstract{A computer vision systems recognising gestures in order to operate a photo browser is reviewed. The system evaluation focuses mainly on the accuracy of the system. We see that some gestures are confused, limiting the system's overall performance. The user evaluation is carried out by usability questionnaires. An overall evaluation is given using the PSSUQ, which shows that the system does not meet the standards set for a computer vision system. Parts of the system are evaluated using ASQ and SEQ, which show difference between tasks within the system. Linking both, we see that the way the system is running short of recognising gestures influences the user's perception of the system. }
+\abstract{\noindent A computer vision systems recognising gestures in order to operate a photo browser is reviewed. The system evaluation focuses mainly on the accuracy of the system. We see that some gestures are confused, limiting the system's overall performance. The user evaluation is carried out by usability questionnaires. An overall evaluation is given using the PSSUQ, which shows that the system does not meet the standards set for a computer vision system. Parts of the system are evaluated using ASQ and SEQ, which show difference between tasks within the system. Linking both, we see that the way the system is running short of recognising gestures influences the user's perception of the system. }
 
 \vspace{1cm}
 
@@ -26,9 +26,11 @@
 \section{Introduction}
 The ease of using systems has become more important through the years. In order to check the usefulness, we need to evaluate the system. In this paper, we will discuss the usability of a body photo browser system, as will be defined later this section. The need for this is quite clear: the system is built for a user who wants a fluent experience, as well as a clear view of how to use the system. Taking this into consideration, we will discuss the system both from a system's perspective and the user's perspective.
 
-The purpose of this evaluation is mainly to identify pitfalls in the system's accuracy, as well as recognising limiting factors for a satisfying user experience. We want to know what adaptations must be made to the current system in order to create an overall better performing system in terms over ease, satisfaction and accuracy.
+The purpose of this evaluation is mainly to identify pitfalls in the system's accuracy, as well as recognising limiting factors for a satisfying user experience. We want to know what adaptations must be made to the current system in order to create an overall better performing system in terms of ease, satisfaction and accuracy.
 
-In section 2, the system's reliability concerning robustness and accuracy will be discussed. After that, the usability of the system regarding ease of use and intuitiveness will be discussed in section 3. Last but not least, a conclusion will be drawn based upon the evaluations in sections 2 and 3.
+
+
+In section 2, the system's reliability concerning robustness and accuracy will be discussed. For this, we will look at the accuracy of the system using a confusion matrix in order to get the system's precision and recall. After that, the usability of the system regarding ease of use and intuitiveness will be discussed in section 3 by the use of standard questionnaires (PSSUQ, ASQ and SEQ, see \ref{sub:userMeth}). Last but not least, a conclusion will be drawn based upon the evaluations in sections 2 and 3.
 
 %INCLUDE research goals in introduction
 
@@ -93,7 +95,7 @@ To achieve accurate and representing results, we have recorded a total of 159 ac
 \textbf{Accuracy}          & \textbf{Recall}            & \textbf{Precision}         \\
 \multicolumn{1}{c}{67,5\%} & \multicolumn{1}{c}{69,9\%} & \multicolumn{1}{c}{95,3\%}
 \end{tabular}
-\caption{Accuracy, Prevision and Recall of System Evaluation}
+\caption{Accuracy, Precision and Recall of System Evaluation}
 \label{table:systemevalvars}
 \end{table}
 
@@ -172,21 +174,21 @@ First of all, we ask the user to take a look at the system. We have defined four
 
 Secondly, in order to get measurements, we set up a questionnaire. According to Sauro and Lewis \cite{sauro2012quantifying}, and Tullis and Albert \cite{albert2013measuring}, there are different standardized questionnaires. For our system, we want to know whether the user is satisfied with the system as a whole. As defined by Sauro and Lewis, the PSSUQ (Post-study System Usability Questionnaire) is "designed to access users' perceived satisfaction with computer system applications" \cite{sauro2012quantifying}. Looking at our goal, we think this questionnaire fits our research. Therefore, we incorporated this questionnaire at the end of the test, after all the scenarios have been completed. We chose the PSSUQ over the SUS (System Usablity Scale), which can also be used as a measure of the usability of a system, due to an increased reliability \cite{sauro2012quantifying}.
 
-In addition, we thought that the user should be able to tell us what he perceived during each scenario. For that, we set up a combination of the ASQ (After Scenario Questionnaire) and the SEQ (Single Ease Question). The AQS was developed by Lewis in order to describe the user's satisfaction with completing a certain task \cite{sauro2012quantifying}\cite{lewis1995ibm}. This can be perfectly used for our research goal. Moreover, the ASQ is linked to the PSSUQ, and also describes the user's satisfaction with a system, in this case a certain task. Furthermore, as the name suggests, the SEQ is used to describe a user's view on the ease of completing a task. The combination is used to get more reliable results.
+In addition, we thought that the user should be able to tell us what he perceived during each scenario. For that, we set up a combination of the ASQ (After Scenario Questionnaire) and the SEQ (Single Ease Question). The ASQ was developed by Lewis in order to describe the user's satisfaction with completing a certain task \cite{sauro2012quantifying}\cite{lewis1995ibm}. This can be perfectly used for our research goal. Moreover, the ASQ is linked to the PSSUQ, and also describes the user's satisfaction with a system, in this case a certain task. Furthermore, as the name suggests, the SEQ is used to describe a user's view on the ease of completing a task. The combination is used to get more reliable results.
 
 \subsection{Results}
-To start off, we look at the user's thoughts on the gestures to be used. In Table \ref{tab:compGes}, we show the percentage of user's defining a certain gesture for an action. We can see that for the navigation actions, the users differ in view, whereas for rotations, all the user say the same.
+To start off, we look at the user's thoughts on the gestures to be used. In Table \ref{tab:compGes}, we show the percentage of user's defining a certain gesture for an action. We can see that for the navigation actions, the users differ in view, whereas for rotations, all the users say the same.
 \renewcommand{\arraystretch}{1.5}
 \begin{table}[h!]
 \begin{center}
 \begin{tabular}{l || l | c}
 \textbf{Action} & \textbf{ Users opinions} & \% \\
 \hline
-\multirow{2}{*}{Next photo} & Hand left to right & 75\\
- & \textbf{Hand right to left }& \textbf{25} \\
+\multirow{2}{*}{Next photo} & Hand left to right & 43 \\
+ & \textbf{Hand right to left }& \textbf{57} \\
 \hline
-\multirow{2}{*}{Previous photo} & \textbf{Hand left to right} & \textbf{25}\\
-& Hand right to left & 75\\
+\multirow{2}{*}{Previous photo} & \textbf{Hand left to right} & \textbf{57}\\
+& Hand right to left & 43\\
 \hline
 \multirow{2}{*}{Rotate left} & Rotate hands in circle counter-clockwise & 100 \\
 & \textbf{Left hand down, right hand up} & \textbf{0} \\
@@ -195,17 +197,13 @@ To start off, we look at the user's thoughts on the gestures to be used. In Tabl
 & \textbf{Left hand up, right hand down} & \textbf{0}
 \end{tabular}
 \end{center}
-\caption{\textit{Comparison of the implemented gestures (in \textbf{bold}) with the user's opinions on the gestures to be used. $ n = 4$}}
+\caption{\textit{Comparison of the implemented gestures (in \textbf{bold}) with the user's opinions on the gestures to be used. $ n = 7$}}
 \label{tab:compGes}
 \end{table}
 
 
 After that, we need to examine the results from the questionnaires. We will start by analysing the scenario questionnaires, the SEQ and ASQ.
 Firstly, the SEQ results are shown in Table \ref{tab:seq}. On first glance, we can see that for the scenarios containing only navigating to photos, the overall score is low ( $<$ 3), as opposed to those only containing rotations ( $>$4). Furthermore, the more complicated tasks show a broad confidence interval, meaning that there is much variation between users as far as ease of use is concerned. \\
-
-\textit{[ASQ results will follow in the final paper]\\}
-
-
 
 \renewcommand{\arraystretch}{1.0}
 \begin{table}[h!]
@@ -216,23 +214,46 @@ Firstly, the SEQ results are shown in Table \ref{tab:seq}. On first glance, we c
 \textbf{Mean} &
 \textbf{Upper} \\
 \hline
-1 & Navigate to the next photo & 0.58 & 1.5 & 2.42 \\
-2 & Navigate to the previous photo & 0.58 & 1.5 & 2.42 \\
-3 & Rotate the photo clockwise & 2.45 & 4.5 & 6.56 \\
-4 & Rotate the photo counter-clockwise  & 2.45 & 4.5 & 6.56 \\
-5 & Navigate to the second next photo & 0.73 & 2.25 & 3.77 \\
-6 & Rotate the previous photo clockwise & 0.40 & 3.0 & 5.60 \\
-7 & Rotate the photo and put it back up & 1.25 & 3.25 & 5.25\\
-8 & Navigate to the photo containing [something]& 1.25 & 3.25 & 5.25\\
-9 & Put the current (rotated) photo back up  & 0.10 & 3.0 & 5.90\\
-10 & Navigate to the rotated photo and put it back up & 0.70 & 2.0 & 3.30\\
+1 & Navigate to the next photo & 0.93 & 2.43 & 3.93 \\
+2 & Navigate to the previous photo & 0.93 & 2.43 & 3.93 \\
+3 & Rotate the photo clockwise & 1.84 & 3.43 & 5.02 \\
+4 & Rotate the photo counter-clockwise  & 1.84 & 3.43 & 5.02 \\
+5 & Navigate to the second next photo & 1.59 & 2.29 & 2.98 \\
+6 & Rotate the previous photo clockwise & 1.55 & 2.71 & 3.87 \\
+7 & Rotate the photo and put it back up & 1.55 & 2.71 & 3.87\\
+8 & Navigate to the photo containing [something]& 1.39 & 2.57 & 3.75\\
+9 & Put the current (rotated) photo back up  & 1.03 & 2.42 & 3.83\\
+10 & Navigate to the rotated photo and put it back up & 1.41 & 2.28 & 3.17\\
 \end{tabular}
 \end{center}
-\caption{\textit{Results of the SEQ, showing the mean and 95\% confidence intervals for each of the scenarios. $n=4$}}
+\caption{\textit{Results of the SEQ, showing the mean and 95\% confidence intervals for each of the scenarios. $n=7$}}
 \label{tab:seq}
 \end{table}
 
-Now we need to study the user's satisfaction overall. In Table \ref{tab:pssuq}, the results from the PSSUQ questionnaire are shown. 
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{l | llllllllll}
+            & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} \\
+\hline
+\textbf{1}  & 1.00       & -          & -          & -          & -          & -          & -          & -          & -          & -           \\
+\textbf{2}  & 0.69        & 1.00       & -          & -          & -          & -          & -          & -          & -          & -           \\
+\textbf{3}  & 0.76       & 1.00       & 1.00       & -          & -          & -          & -          & -          & -          & -           \\
+\textbf{4}  & -0.97      & -0.5       & -0.58      & 1.00       & -          & -          & -          & -          & -          & -           \\
+\textbf{5}  & 0.76       & 1.00       & 1.00       & -0.58      & 1.00       & -          & -          & -          & -          & -           \\
+\textbf{6}  & 0.69       & 1.00       & 1.00       & -0.50      & 1.00       & 1.00       & -          & -          & -          & -           \\
+\textbf{7}  & 0.33       & 0.91       & 0.87       & -0.09      & 0.87       & 0.91       & 1.00       & -          & -          & -           \\
+\textbf{8}  & 1.00       & 0.69       & 0.76       & -0.97      & 0.76       & 0.69       & 0.33       & 1.00       & -          & -           \\
+\textbf{9}  & 0.50       & -0.28      & -0.19      & -0.69      & -0.19      & -0.28      & -0.28      & 0.50       & 1.00       &             \\
+\textbf{10} & 0.50       & 0.97       & 0.95       & -0.28      & 0.94       & 0.97       & 0.97       & 0.50       & -0.50      & 1.00       
+\end{tabular}
+\caption{\textit{Results of the ASQ, showing the correlation of overall usability between scenarios, $n=7$}}
+\label{tab:ASQ}
+\end{center}
+\end{table}
+
+The results from the ASQ are depicted in Table \ref{tab:ASQ}. Each cell represents the correlation of the scenarios as obtained after doing a factor analysis on the data gotten. Striking is the fact that scenarios 2, 3, 5 and 6 are tightly correlated in terms of ease. However, in comparison with scenario 1, which is opposite of scenario 2, these scenarios do not have a strong correlation.\\
+
+Now we need to study the user's satisfaction overall. In Table \ref{tab:pssuq}, the results from the PSSUQ questionnaire are shown. For each question, the mean of the scores is shown as well as the values for the 95\% confidence intervals. At the bottom, the averages per group of questions is shown, in compliance with the grouping of questions according to Sauro and Lewis \cite{sauro2012quantifying}.
 
 \begin{table}[t!]
 \begin{center}
@@ -242,53 +263,67 @@ Now we need to study the user's satisfaction overall. In Table \ref{tab:pssuq}, 
 \textbf{Mean} &
 \textbf{Upper} \\
 \hline
-1  & 1.95 & 2.75 & 3.55 \\
-2 & 1.23 & 2.75 & 4.27 \\
-3 & 1.95 & 2.75 & 3.55\\
-4  & 0.75 & 3 & 5.25 \\
-5 & 1.23 & 2.75 & 4.27 \\
-6 & 1.73 & 3.25 & 4.77 \\
-7 & 3.36 & 5.75 & 8.14\\
-8 & 2.70 & 4 & 5.30\\
-9  & 1.74 & 4.5 & 7.26\\
-10 & 2.75 & 5 & 7.25\\
-11 & 2.36 & 4.75 & 7.14 \\
-12 & 2.75 & 5 & 7.25\\
-13 & 0.75 & 3 & 5.25\\
-14 & 2.46 & 3.25 & 4.05\\
-15 & 2.58 & 3.5 & 4.42\\
-16 & 1.73 & 3.25 & 4.77 \\
+1 & 2.08 & 2.57 & 3.06 \\
+2 & 1.70 & 2.43 & 3.15 \\
+3 & 2.26 & 2.71 & 3.17\\
+4 & 1.87 & 2.86 & 3.85 \\
+5 & 0.93 & 2.00 & 3.07 \\
+6 & 2.84 & 3.57 & 4.30 \\
+7 & 4.73 & 5.86 & 6.98\\
+8 & 1.90 & 3.14 & 4.39\\
+9  & 2.31 & 4.29 & 6.26\\
+10 & 2.31 & 4.00 & 5.69\\
+11 & 1.59 & 3.43 & 5.27\\
+12 & 3.40 & 4.86 & 6.31\\
+13 & 1.44 & 2.71 & 3.99\\
+14 & 2.22 & 2.86 & 3.99\\
+15 & 2.25 & 3.43 & 4.61\\
+16 & 2.03 & 2.86 & 3.69 \\
 \hline 
 \hline
-Avg. 1-6 & 1.47 & 2.88 & 4.28 \\
-Avg. 7-12 & 2.61 & 4.83 & 7.05 \\
-Avg. 13-15  & 1.92 & 3.25  & 4.57 \\
-Avg. 1-16  & 2.00 & 3.70 &  5.40 \\
+Avg. 1-6 & 1.95 & 2.69 & 3.43 \\
+Avg. 7-12 & 2.71 & 4.26 & 5.82 \\
+Avg. 13-15  & 1.97 & 3.00  & 4.03 \\
+Avg. 1-16  & 2.24 & 3.35 &  4.46 \\
 \end{tabular} 
-\caption{PSSUQ results showing the mean for each question compared to the 95\% confidence intervals. $n=4$}
+\caption{PSSUQ results showing the mean for each question compared to the 95\% confidence intervals. $n=7$}
 \label{tab:pssuq}
 \end{center}
 \end{table}
 
+\pagebreak
+
 \subsection{Discussion}
 From the results obtained for the user's opinion on the gestures, we can conclude that the navigation is something that matters from person to person. The intention of the implemented gesture was to simulate a swipe on, for example, a tablet. To go to the next photo, one must then swipe from right to left, seemingly pushing the photo roll to the left. However, users perceive that it could also be seen as the direction to where one wants to go. In this case, the meaning of a swipe to the left is that the photo to the left should be shown, thus the previous. This is something that has to be worked out further. 
+
 Another striking observation is that users all have the same opinion on rotation. However, this differs from our own implementation. Looking closely to the implementation, however, we see that the gesture implemented resembles a rotating movement without circulation. The circular limitation still hinders smooth use of the system, as can also be seen in the SEQ.
 
-The SEQ shows us that the system's easy lies in the navigation, and that the rotation is more difficult. As stated before, the cause of this might be the implementation of the gestures as is. The navigation issue is resolved due to the fact that the right gestures are explained after the first questions (Section \ref{sub:userMeth}.
+The SEQ results hint that the system's ease lies in the navigation, and that the rotation is more difficult. We can test this using a t-test on paired samples on the obtained results for the SEQ. Scenarios 3 and 4 are more difficult than scenarios 1 and 2 (M = 2, SD = 1.15). This difference is statistically significant: t(6) = 4.58, p $<$ 0.05, two-tailed. 
 
-From the PSSUQ, we can conclude that the system's performance is not good enough, when compared to the PSSUQ norms \cite{sauro2012quantifying}. 
+ As stated before, the cause of this might be the implementation of the gestures as is. The navigation issue is resolved due to the fact that the right gestures are explained after the first questions (Section \ref{sub:userMeth}.
+ 
+In addition to the results from the SEQ, the ASQ shows us a difference between the rotations and the navigations in terms of correlation. However, we need to mention that there are inconsistencies in the data too, for example when comparing scenarios 1 and 2: the only changed factor is the direction in which navigation must be performed. However, we see that there is a low correlation between these two scenarios, whereas scenario 2 and 3, which are navigation as opposed to rotation, have a high correlation.
 
-Overall, for the user evaluation, we can generally say that when only navigation is incorporated, the user is able to do tasks with ease. On the contrary, when rotation is included, the user will start to struggle. Nonetheless, we still have to be careful concluding from our result set, as the sample size is much too low ($n=4$) in order to get a clear representation.  
+From the PSSUQ, we can conclude that the system's performance is not good enough, when compared to the PSSUQ norms \cite{sauro2012quantifying}. The obtained values for each of the questions are slightly higher than wanted. 
+
+Overall, for the user evaluation, we can generally say that when only navigation is incorporated, the user is able to do tasks with ease. On the contrary, when rotation is included, the user will start to struggle. Nonetheless, we still have to be careful concluding from our result set, as the sample size is much too low ($n=7$) in order to get a clear representation.  
 
 \section{Discussion}
-All in all, when we link the system evaluation to the user evaluation, we can see one striking property already. Due to problems with the implementation of the rotating gestures, the system performs poor and the user cannot use the system according to plan. 
+To round off, when looking at the system evaluation, we see that the systems performance in terms of accuracy is quite well. Having a high precision comes with the cost of a decreased recall. Still, the accuracy amounts to a steady 67.5\%. Continuing on this, we have seen that the systems confuses the rotation gestures greatly. Sometimes the rotations are not even recognised by the system as such, causing erratic behaviour.
 
-In the system evaluation, we have seen that rotating gestures are easily confused with the other rotation, and that the system sometimes does not recognise any gesture at all when rotating. In the user evaluation, we have seen these properties return in the SEQ, where scenarios involving rotation were seen less satisfactory to the user.
-This implies that for further research, the system's implementation of rotation must be reviewed and edited, in order to get a more accurate and more satisfying system.
+The user evaluation shows the same problems. Where navigation is seemingly easy to do, rotations are experienced as much more difficult to do overall. 
 
+Linking these two, we can conclude that the implementation of the rotations is hindering a smooth use of the system. The problems arising from the system not recognising a significant amount of gestures causes users to perform less on some of the tasks set. On the other hand, the way navigation is implemented is simple: the system can handle the gestures easily, and the user is satisfied by the way he can browse through the photos. This, however, needs to be said with caution, as users have a different opinion on what direction (left-right or right-left) is linked to a certain navigational task (next / previous).
+
+Taking this into account, we can safely say that further examination of the implementation of the rotations has to be done carefully. By improving the system's performance on this type of gestures, we can maybe improve the user's perception of the system, as we can conclude that these are linked. 
+
+In this evaluation, we have not looked at the boundaries of the system in terms of lighting, difference between user's, and so on. Therefore, more research could be performed on the influence of colors and lighting on our system's performance.
+After examination of the gestures, we can perform A/B-testing in order to see whether the newly set gesture is good enough. 
 
 \bibliography{mybib}{}
 \bibliographystyle{plain}
 
 
+\section*{Acknowledgement:}
+\textit{We would like to thank each and every one of the willing volunteers for participating in our evaluation.} 
 \end{document}
